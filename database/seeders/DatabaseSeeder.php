@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,11 +14,61 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Define roles
+        $roles = ['Barangay Captain', 'Barangay Secretary', 'Resident'];
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Create roles if they don't exist
+        foreach ($roles as $role) {
+            Role::firstOrCreate(['name' => $role]);
+        }
+
+        // Create users and assign roles
+        $users = [
+            [
+                'first_name' => 'Juan',
+                'last_name' => 'Dela Cruz',
+                'email' => 'captain@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'Barangay Captain',
+                'contact_number' => '09123456781',
+            ],
+            [
+                'first_name' => 'Maria',
+                'last_name' => 'Santos',
+                'email' => 'secretary@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'Barangay Secretary',
+                'contact_number' => '09123456782',
+            ],
+            [
+                'first_name' => 'Pedro',
+                'last_name' => 'Gomez',
+                'email' => 'resident@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'Resident',
+                'contact_number' => '09123456783',
+            ],
+        ];
+
+        foreach ($users as $userData) {
+            $user = User::firstOrCreate([
+                'email' => $userData['email'],
+            ], [
+                'first_name' => $userData['first_name'],
+                'last_name' => $userData['last_name'],
+                'birthday' => '1990-01-01', // Sample birthday
+                'gender' => 'Male', // Default gender, adjust as needed
+                'contact_number' => $userData['contact_number'],
+                'address' => '123 Barangay St.',
+                'city' => 'Sample City',
+                'state' => 'Sample State',
+                'zip_code' => '12345',
+                'household_number' => 'H12345',
+                'password' => $userData['password'],
+            ]);
+
+            // Assign role to user
+            $user->assignRole($userData['role']);
+        }
     }
 }
