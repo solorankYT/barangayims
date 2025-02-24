@@ -61,8 +61,7 @@ export default function AuthenticatedLayout({ header = "Dashboard", children }) 
     ];
 
     const userManagementItems = [
-        { label: "Roles", icon: <AdminPanelSettings />, route: "dashboard" },
-        { label: "Permissions", icon: <VerifiedUser />, route: "dashboard" }
+        { label: "Roles", icon: <AdminPanelSettings />, route: "roles" },
     ];
 
     return (
