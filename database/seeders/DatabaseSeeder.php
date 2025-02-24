@@ -51,8 +51,7 @@ class DatabaseSeeder extends Seeder
             $user = User::firstOrCreate([
                 'email' => $userData['email'],
             ], [
-                'first_name' => $userData['first_name'],
-                'last_name' => $userData['last_name'],
+                'name' => $userData['name'],
                 'birthday' => '1990-01-01', // Sample birthday
                 'gender' => 'Male', // Default gender, adjust as needed
                 'contact_number' => $userData['contact_number'],
