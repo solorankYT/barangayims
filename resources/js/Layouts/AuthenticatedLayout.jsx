@@ -121,7 +121,7 @@ export default function AuthenticatedLayout({ header = "Dashboard", children }) 
                 <Box sx={{ width: drawerWidth, height: "100vh", display: "flex", flexDirection: "column" }}>
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2 }}>
                         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000" }}>
-                            Welcome Admin
+                            Barangay IMS
                         </Typography>
                     </Box>
                     <Divider sx={{ bgcolor: "#ddd" }} />
