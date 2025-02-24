@@ -25,24 +25,21 @@ class DatabaseSeeder extends Seeder
         // Create users and assign roles
         $users = [
             [
-                'first_name' => 'Juan',
-                'last_name' => 'Dela Cruz',
+                'name' => 'Juan Dela Cruz',
                 'email' => 'captain@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'Barangay Captain',
                 'contact_number' => '09123456781',
             ],
             [
-                'first_name' => 'Maria',
-                'last_name' => 'Santos',
+                'name' => 'Maria Santos',
                 'email' => 'secretary@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'Barangay Secretary',
                 'contact_number' => '09123456782',
             ],
             [
-                'first_name' => 'Pedro',
-                'last_name' => 'Gomez',
+                'name' => 'Pedro Gomez',
                 'email' => 'resident@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'Resident',
