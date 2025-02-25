@@ -28,6 +28,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/roles/{role}', [RoleController::class, 'destroy']);
 });
 
+Route::get('/residentmanagement', function () {
+    return Inertia::render('ResidentManagement');
+})->middleware(['auth', 'verified'])->name('residentmanagement');
+
+Route::get('/incidentreport', function () {
+    return Inertia::render('IncidentReport');
+})->middleware(['auth', 'verified'])->name('incidentreport');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
