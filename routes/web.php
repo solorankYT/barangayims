@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DocumentRequestController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResidentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -35,9 +36,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/roles/{role}', [RoleController::class, 'destroy']);
 });
 
-Route::get('/residentmanagement', function () {
-    return Inertia::render('ResidentManagement');
-})->middleware(['auth', 'verified'])->name('residentmanagement');
+Route::middleware('auth')->group(function () {
+    Route::get('/residentmanagement', [ResidentController::class, 'index'])->name('residentmanagement');
+    Route::post('/residentmanagement', [ResidentController::class, 'store']);
+    Route::get('/residentmanagement/{id}', [ResidentController::class, 'show']);
+    Route::put('/residentmanagement/{id}', [ResidentController::class, 'update']);
+    Route::delete('/residentmanagement/{id}', [ResidentController::class, 'destroy']);
+});
+
 
 Route::get('/incidentreport', function () {
     return Inertia::render('IncidentReport');
@@ -46,8 +52,6 @@ Route::get('/incidentreport', function () {
 Route::get('/admindocuments', function () {
     return Inertia::render('AdminDocuments');
 })->middleware(['auth', 'verified'])->name('admindocuments');
-
-
 
 
 Route::middleware('auth')->group(function () {

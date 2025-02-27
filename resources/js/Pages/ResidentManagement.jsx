@@ -1,200 +1,193 @@
 import React, { useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
-  Button,
   Box,
-  Typography,
-  Modal,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   TextField,
   IconButton,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from "@mui/material";
-import { Add, Edit, Delete, Search } from "@mui/icons-material";
+import { Add, Edit, Delete } from "@mui/icons-material";
+import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const ResidentManagement = () => {
-  const [residents, setResidents] = useState([
-    { id: 1, name: "Juan Dela Cruz", age: 30, address: "Brgy 137" },
-    { id: 2, name: "Maria Santos", age: 25, address: "Brgy 24" },
-    { id: 3, name: "Pedro Gonzales", age: 40, address: "Brgy 58" },
-  ]);
+  const { residents } = usePage().props; 
+  const [open, setOpen] = useState(false);
+  const [residentData, setResidentData] = useState({
+    id: "",
+    name: "",
+    birthday: "",
+    gender: "",
+    email: "",
+    contact_number: "",
+    address: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    household_number: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingResident, setEditingResident] = useState(null);
-  const [formData, setFormData] = useState({ name: "", age: "", address: "" });
-
-  // Open Modal for Add or Edit
-  const handleOpenModal = (resident = null) => {
-    if (resident) {
-      setEditingResident(resident);
-      setFormData(resident);
-    } else {
-      setEditingResident(null);
-      setFormData({ name: "", age: "", address: "" });
-    }
-    setModalOpen(true);
+  const handleOpen = (resident = null) => {
+    setIsEditing(!!resident);
+    setResidentData(
+      resident
+        ? resident
+        : {
+            id: "",
+            name: "",
+            birthday: "",
+            gender: "",
+            email: "",
+            contact_number: "",
+            address: "",
+            city: "",
+            state: "",
+            zip_code: "",
+            household_number: "",
+          }
+    );
+    setOpen(true);
   };
 
-  // Close Modal
-  const handleCloseModal = () => {
-    setModalOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setResidentData({
+      id: "",
+      name: "",
+      birthday: "",
+      gender: "",
+      email: "",
+      contact_number: "",
+      address: "",
+      city: "",
+      state: "",
+      zip_code: "",
+      household_number: "",
+    });
   };
 
-  // Handle Input Change
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Handle Add or Update Resident
   const handleSave = () => {
-    if (!formData.name || !formData.age || !formData.address) return;
-
-    if (editingResident) {
-      setResidents(
-        residents.map((res) =>
-          res.id === editingResident.id ? { ...editingResident, ...formData } : res
-        )
-      );
+    if (isEditing) {
+      router.put(`/residentmanagement/${residentData.id}`, residentData, {
+        onSuccess: () => handleClose(),
+      });
     } else {
-      const id = residents.length ? residents[residents.length - 1].id + 1 : 1;
-      setResidents([...residents, { id, ...formData }]);
+      router.post("/residentmanagement", residentData, {
+        onSuccess: () => handleClose(),
+      });
     }
-
-    handleCloseModal();
   };
-
-  // Handle Delete Resident
+  
   const handleDelete = (id) => {
-    setResidents(residents.filter((resident) => resident.id !== id));
+    if (window.confirm("Are you sure you want to delete this resident?")) {
+      router.delete(`/residentmanagement/${id}`);
+    }
   };
-
-  // Handle Search Input Change
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  // Filter Residents Based on Search Term
-  const filteredResidents = residents.filter((resident) =>
-    Object.values(resident).some((value) =>
-      String(value).toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 70 },
-    { field: "name", headerName: "Name", width: 200 },
-    { field: "age", headerName: "Age", width: 100 },
-    { field: "address", headerName: "Address", width: 200 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 150,
-      renderCell: (params) => (
-        <Box>
-          <IconButton color="primary" onClick={() => handleOpenModal(params.row)}>
-            <Edit />
-          </IconButton>
-          <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
-            <Delete />
-          </IconButton>
-        </Box>
-      ),
-    },
-  ];
 
   return (
     <AuthenticatedLayout>
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Resident Management
-      </Typography>
-
-      {/* Search Bar */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-        <TextField
-          label="Search Resident"
-          variant="outlined"
-          size="small"
-          fullWidth
-          value={searchTerm}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1 }} />,
-          }}
-        />
+      <Box sx={{ width: "100%", padding: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Resident Management
+        </Typography>
         <Button
           variant="contained"
+          color="primary"
           startIcon={<Add />}
-          onClick={() => handleOpenModal()}
+          onClick={() => handleOpen()}
+          sx={{ mb: 2 }}
         >
           Add Resident
         </Button>
-      </Box>
 
-      {/* Residents Table */}
-      <Box sx={{ height: 400, width: "100%" }}>
-        <DataGrid
-          rows={filteredResidents}
-          columns={columns}
-          pageSize={5}
-          disableSelectionOnClick
-        />
-      </Box>
+        {/* Residents Table */}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>ID</b></TableCell>
+                <TableCell><b>Name</b></TableCell>
+                <TableCell><b>Birthday</b></TableCell>
+                <TableCell><b>Gender</b></TableCell>
+                <TableCell><b>Email</b></TableCell>
+                <TableCell><b>Contact</b></TableCell>
+                <TableCell><b>Address</b></TableCell>
+                <TableCell><b>City</b></TableCell>
+                <TableCell><b>State</b></TableCell>
+                <TableCell><b>Zip Code</b></TableCell>
+                <TableCell><b>Household #</b></TableCell>
+                <TableCell><b>Actions</b></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {residents.length > 0 ? (
+                residents.map((resident) => (
+                  <TableRow key={resident.id}>
+                    <TableCell>{resident.id}</TableCell>
+                    <TableCell>{resident.name}</TableCell>
+                    <TableCell>{resident.birthday}</TableCell>
+                    <TableCell>{resident.gender}</TableCell>
+                    <TableCell>{resident.email}</TableCell>
+                    <TableCell>{resident.contact_number}</TableCell>
+                    <TableCell>{resident.address}</TableCell>
+                    <TableCell>{resident.city}</TableCell>
+                    <TableCell>{resident.state}</TableCell>
+                    <TableCell>{resident.zip_code}</TableCell>
+                    <TableCell>{resident.household_number}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleOpen(resident)} color="primary">
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => handleDelete(resident.id)} color="error">
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={12} align="center">
+                    No residents found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      {/* Modal for Add/Edit Resident */}
-      <Modal open={modalOpen} onClose={handleCloseModal}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            {editingResident ? "Edit Resident" : "Add Resident"}
-          </Typography>
-          <TextField
-            label="Name"
-            name="name"
-            fullWidth
-            value={formData.name}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="Age"
-            name="age"
-            type="number"
-            fullWidth
-            value={formData.age}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="Address"
-            name="address"
-            fullWidth
-            value={formData.address}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-          />
-          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-            <Button onClick={handleCloseModal} color="secondary">
-              Cancel
-            </Button>
-            <Button variant="contained" onClick={handleSave}>
-              {editingResident ? "Update" : "Add"}
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-    </Box>
+        {/* Modal for Add/Edit Resident */}
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>{isEditing ? "Edit Resident" : "Add Resident"}</DialogTitle>
+          <DialogContent>
+            <TextField label="Name" name="name" fullWidth margin="dense" value={residentData.name} onChange={(e) => setResidentData({ ...residentData, name: e.target.value })} />
+            <TextField label="Birthday" name="birthday" type="date" fullWidth margin="dense" value={residentData.birthday} onChange={(e) => setResidentData({ ...residentData, birthday: e.target.value })} />
+            <TextField label="Gender" name="gender" fullWidth margin="dense" value={residentData.gender} onChange={(e) => setResidentData({ ...residentData, gender: e.target.value })} />
+            <TextField label="Email" name="email" type="email" fullWidth margin="dense" value={residentData.email} onChange={(e) => setResidentData({ ...residentData, email: e.target.value })} />
+            <TextField label="Contact Number" name="contact_number" fullWidth margin="dense" value={residentData.contact_number} onChange={(e) => setResidentData({ ...residentData, contact_number: e.target.value })} />
+            <TextField label="Address" name="address" fullWidth margin="dense" value={residentData.address} onChange={(e) => setResidentData({ ...residentData, address: e.target.value })} />
+            <TextField label="City" name="city" fullWidth margin="dense" value={residentData.city} onChange={(e) => setResidentData({ ...residentData, city: e.target.value })} />
+            <TextField label="State" name="state" fullWidth margin="dense" value={residentData.state} onChange={(e) => setResidentData({ ...residentData, state: e.target.value })} />
+            <TextField label="Zip Code" name="zip_code" fullWidth margin="dense" value={residentData.zip_code} onChange={(e) => setResidentData({ ...residentData, zip_code: e.target.value })} />
+            <TextField label="Household Number" name="household_number" fullWidth margin="dense" value={residentData.household_number} onChange={(e) => setResidentData({ ...residentData, household_number: e.target.value })} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="secondary">Cancel</Button>
+            <Button onClick={handleSave} color="primary">{isEditing ? "Update" : "Save"}</Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </AuthenticatedLayout>
   );
 };
