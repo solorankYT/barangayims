@@ -36,6 +36,14 @@ Route::get('/incidentreport', function () {
     return Inertia::render('IncidentReport');
 })->middleware(['auth', 'verified'])->name('incidentreport');
 
+Route::get('/admindocuments', function () {
+    return Inertia::render('AdminDocuments');
+})->middleware(['auth', 'verified'])->name('admindocuments');
+
+Route::get('/documents', function () {
+    return Inertia::render('Documents');
+})->middleware(['auth', 'verified'])->name('documents');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
