@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DocumentRequestController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,12 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/document-requests', [DocumentRequestController::class, 'index']) ->name('admindocuments');
+    Route::post('/document-requests', [DocumentRequestController::class, 'store']);
+    Route::put('/document-requests/{id}', [DocumentRequestController::class, 'update']);
+    Route::delete('/document-requests/{id}', [DocumentRequestController::class, 'destroy']);
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/roles', [RoleController::class, 'index'])->name('roles');
@@ -40,9 +47,8 @@ Route::get('/admindocuments', function () {
     return Inertia::render('AdminDocuments');
 })->middleware(['auth', 'verified'])->name('admindocuments');
 
-Route::get('/documents', function () {
-    return Inertia::render('Documents');
-})->middleware(['auth', 'verified'])->name('documents');
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
