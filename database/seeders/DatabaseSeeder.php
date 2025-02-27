@@ -6,6 +6,8 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,15 +16,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Define roles
+        $this->seedRoles();
+        $this->seedUsers();
+        $this->seedDocumentTypes();
+    }
+
+    /**
+     * Seed roles into the database.
+     */
+    private function seedRoles(): void
+    {
         $roles = ['Barangay Captain', 'Barangay Secretary', 'Resident'];
 
-        // Create roles if they don't exist
         foreach ($roles as $role) {
             Role::firstOrCreate(['name' => $role]);
         }
+    }
 
-        // Create users and assign roles
+    /**
+     * Seed users and assign roles.
+     */
+    private function seedUsers(): void
+    {
         $users = [
             [
                 'name' => 'Juan Dela Cruz',
@@ -65,6 +80,52 @@ class DatabaseSeeder extends Seeder
 
             // Assign role to user
             $user->assignRole($userData['role']);
+        }
+    }
+
+    /**
+     * Seed document types into the database.
+     */
+    private function seedDocumentTypes(): void
+    {
+        $documentTypes = [
+            [
+                'name' => 'Barangay Clearance',
+                'category' => 'Certification',
+                'description' => 'A document certifying residency and good standing in the barangay.',
+            ],
+            [
+                'name' => 'Certificate of Indigency',
+                'category' => 'Certification',
+                'description' => 'A certificate proving that an individual belongs to an indigent family.',
+            ],
+            [
+                'name' => 'First Time Job Seeker Certificate',
+                'category' => 'Employment',
+                'description' => 'A certificate issued for first-time job seekers to avail of government benefits.',
+            ],
+            [
+                'name' => 'Barangay Business Permit',
+                'category' => 'Business',
+                'description' => 'A permit required for operating a business within the barangay jurisdiction.',
+            ],
+            [
+                'name' => 'Barangay Blotter Report',
+                'category' => 'Incident Report',
+                'description' => 'A record of complaints or incidents reported to the barangay.',
+            ],
+        ];
+
+        foreach ($documentTypes as $type) {
+            DB::table('document_types')->updateOrInsert(
+                ['name' => $type['name']], // Unique identifier
+                [
+                    'category' => $type['category'],
+                    'description' => $type['description'],
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]
+            );
         }
     }
 }
