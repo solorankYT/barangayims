@@ -13,8 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
-        'first_name',
-        'last_name',
+        'name',
         'birthday',
         'gender',
         'email',
@@ -36,7 +35,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'birthday' => 'date',
+            'birthday' => 'date:Y-m-d',
             'password' => 'hashed',
         ];
     }

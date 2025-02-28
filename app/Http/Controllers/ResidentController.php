@@ -13,7 +13,6 @@ class ResidentController extends Controller
     public function index()
     {
         $residents = User::all();
-        Log::info($residents);
 
         return Inertia::render('ResidentManagement', [
             'residents' => $residents
@@ -22,36 +21,49 @@ class ResidentController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'birthday' => 'required|date',
-            'gender' => 'required|string|max:10',
-            'email' => 'required|email|unique:users,email',
-            'contact_number' => 'nullable|string|max:20',
-            'address' => 'required|string|max:255',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'zip_code' => 'nullable|string|max:10',
-            'household_number' => 'nullable|string|max:50',
-            'password' => 'required|string|min:6'
-        ]);
-
-        $resident = User::create([
-            'name' => $request->name,
-            'birthday' => $request->birthday,
-            'gender' => $request->gender,
-            'email' => $request->email,
-            'contact_number' => $request->contact_number,
-            'address' => $request->address,
-            'city' => $request->city,
-            'state' => $request->state,
-            'zip_code' => $request->zip_code,
-            'household_number' => $request->household_number,
-            'password' => Hash::make($request->password),
-        ]);
-
-        return redirect()->route('residentmanagement')->with('success', 'Resident created successfully.');
-    }
+        try {
+            Log::info('Received resident creation request:', $request->all());
+    
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'birthday' => 'required|date',
+                'gender' => 'required|string|max:10',
+                'email' => 'required|email|unique:users,email',
+                'contact_number' => 'nullable|string|max:20',
+                'address' => 'required|string|max:255',
+                'city' => 'nullable|string|max:100',
+                'state' => 'nullable|string|max:100',
+                'zip_code' => 'nullable|string|max:10',
+                'household_number' => 'nullable|string|max:50',
+                'password' => 'required|string|min:6'
+            ]);
+    
+            $resident = User::create([
+                'name' => $validated['name'],
+                'birthday' => $validated['birthday'],
+                'gender' => $validated['gender'],
+                'email' => $validated['email'],
+                'contact_number' => $validated['contact_number'],
+                'address' => $validated['address'],
+                'city' => $validated['city'],
+                'state' => $validated['state'],
+                'zip_code' => $validated['zip_code'],
+                'household_number' => $validated['household_number'],
+                'password' => Hash::make($validated['password']),
+            ]);
+    
+            Log::info('Resident created successfully:', ['resident' => $resident]);
+    
+            return redirect()->route('residentmanagement')->with('success', 'Resident created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error creating resident:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+    
+            return back()->with('error', 'An error occurred while creating the resident.');
+        }
+    }    
 
     public function show($id)
     {
@@ -61,25 +73,39 @@ class ResidentController extends Controller
 
     public function update(Request $request, $id)
     {
-        $resident = User::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'birthday' => 'required|date',
-            'gender' => 'required|string|max:10',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'contact_number' => 'nullable|string|max:20',
-            'address' => 'required|string|max:255',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'zip_code' => 'nullable|string|max:10',
-            'household_number' => 'nullable|string|max:50',
-        ]);
-
-        $resident->update($validated);
-
-        return redirect()->route('residentmanagement')->with('success', 'Resident updated successfully.');
-    }
+        try {
+            $resident = User::findOrFail($id);
+            Log::info('Resident found:', ['resident' => $resident]);
+    
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'birthday' => 'required|date',
+                'gender' => 'required|string|max:10',
+                'email' => 'required|email|unique:users,email,' . $id,
+                'contact_number' => 'nullable|string|max:20',
+                'address' => 'required|string|max:255',
+                'city' => 'nullable|string|max:100',
+                'state' => 'nullable|string|max:100',
+                'zip_code' => 'nullable|string|max:10',
+                'household_number' => 'nullable|string|max:50',
+            ]);
+    
+            Log::info('Validated Data:', $validated);
+    
+            $resident->update($validated);
+    
+            Log::info('Resident updated successfully:', ['resident' => $resident]);
+    
+            return redirect()->route('residentmanagement')->with('success', 'Resident updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error updating resident:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+    
+            return back()->with('error', 'An error occurred while updating the resident.');
+        }
+    }    
 
     public function destroy($id)
     {

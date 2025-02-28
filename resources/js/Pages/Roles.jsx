@@ -24,12 +24,23 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 const Roles = () => {
   const { roles } = usePage().props;
   const [open, setOpen] = useState(false);
-  const [roleData, setRoleData] = useState({ id: "", name: "" });
+  const [roleData, setRoleData] = useState({ 
+    id: "", 
+    name: "" 
+  });
   const [isEditing, setIsEditing] = useState(false);
 
   const handleOpen = (role = null) => {
     setIsEditing(!!role);
-    setRoleData(role ? { id: role.id, name: role.name } : { id: "", name: "" });
+    setRoleData(
+      role 
+        ? { 
+          id: role.id, 
+          name: role.name 
+        } : { 
+            id: "", 
+            name: "" 
+        });
     setOpen(true);
   };
 

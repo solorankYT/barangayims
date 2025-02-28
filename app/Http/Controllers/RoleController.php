@@ -9,9 +9,7 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    /**
-     * Display a listing of the roles.
-     */
+
     public function index(): Response
     {
         return Inertia::render('Roles', [
@@ -19,9 +17,6 @@ class RoleController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created role in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -33,9 +28,6 @@ class RoleController extends Controller
         return redirect()->route('roles')->with('success', 'Role created successfully.');
     }
 
-    /**
-     * Update the specified role.
-     */
     public function update(Request $request, Role $role)
     {
         $request->validate([
@@ -47,9 +39,6 @@ class RoleController extends Controller
         return redirect()->route('roles')->with('success', 'Role updated successfully.');
     }
 
-    /**
-     * Remove the specified role from storage.
-     */
     public function destroy(Role $role)
     {
         $role->delete();

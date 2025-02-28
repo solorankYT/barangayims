@@ -36,6 +36,7 @@ const ResidentManagement = () => {
     state: "",
     zip_code: "",
     household_number: "",
+    password: "",
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -43,20 +44,34 @@ const ResidentManagement = () => {
     setIsEditing(!!resident);
     setResidentData(
       resident
-        ? resident
+        ? {
+          id: resident.id,
+          name: resident.name,
+          birthday: resident.birthday ? resident.birthday.split("T")[0] : "",
+          gender: resident.gender,
+          email: resident.email,
+          contact_number: resident.contact_number,
+          address: resident.address,
+          city: resident.city,
+          state: resident.state,
+          zip_code: resident.zip_code,
+          household_number: resident.household_number,
+          password: "", 
+        }
         : {
-            id: "",
-            name: "",
-            birthday: "",
-            gender: "",
-            email: "",
-            contact_number: "",
-            address: "",
-            city: "",
-            state: "",
-            zip_code: "",
-            household_number: "",
-          }
+          id: "",
+          name: "",
+          birthday: "",
+          gender: "",
+          email: "",
+          contact_number: "",
+          address: "",
+          city: "",
+          state: "",
+          zip_code: "",
+          household_number: "",
+          password: "",
+        }
     );
     setOpen(true);
   };
@@ -75,16 +90,28 @@ const ResidentManagement = () => {
       state: "",
       zip_code: "",
       household_number: "",
+      password: "",
     });
   };
 
   const handleSave = () => {
+    const formattedData = {
+      ...residentData,
+      birthday: residentData.birthday ? residentData.birthday.split("T")[0] : "",
+    };
+
+    if (!isEditing && !formattedData.password) {
+      alert("Password is required for new residents.");
+      return;
+    }
+
     if (isEditing) {
-      router.put(`/residentmanagement/${residentData.id}`, residentData, {
+      delete formattedData.password; 
+      router.put(`/residentmanagement/${residentData.id}`, formattedData, {
         onSuccess: () => handleClose(),
       });
     } else {
-      router.post("/residentmanagement", residentData, {
+      router.post("/residentmanagement", formattedData, {
         onSuccess: () => handleClose(),
       });
     }
@@ -112,7 +139,6 @@ const ResidentManagement = () => {
           Add Resident
         </Button>
 
-        {/* Residents Table */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -167,7 +193,6 @@ const ResidentManagement = () => {
           </Table>
         </TableContainer>
 
-        {/* Modal for Add/Edit Resident */}
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>{isEditing ? "Edit Resident" : "Add Resident"}</DialogTitle>
           <DialogContent>
@@ -181,6 +206,9 @@ const ResidentManagement = () => {
             <TextField label="State" name="state" fullWidth margin="dense" value={residentData.state} onChange={(e) => setResidentData({ ...residentData, state: e.target.value })} />
             <TextField label="Zip Code" name="zip_code" fullWidth margin="dense" value={residentData.zip_code} onChange={(e) => setResidentData({ ...residentData, zip_code: e.target.value })} />
             <TextField label="Household Number" name="household_number" fullWidth margin="dense" value={residentData.household_number} onChange={(e) => setResidentData({ ...residentData, household_number: e.target.value })} />
+            {!isEditing && (
+              <TextField label="Password" name="password" type="password" fullWidth margin="dense" value={residentData.password} onChange={(e) => setResidentData({ ...residentData, password: e.target.value })} />
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="secondary">Cancel</Button>
