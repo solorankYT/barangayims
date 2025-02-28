@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('status')->default('pending');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('resident_id')->references('id')->on('users');
         });

@@ -55,12 +55,10 @@ export default function AuthenticatedLayout({ header = "Dashboard", children }) 
     const navItems = [
         { label: "Dashboard", icon: <DashboardIcon />, route: "dashboard" },
         { label: "Certificate Application", icon: <PostAdd />, route: "dashboard" },
-        { label: "Document and Record", icon: <Article />, route: "dashboard" },
+        { label: "Document and Record", icon: <Article />, route: "AdminDocuments" }, 
         { label: "Incident Reports", icon: <Report />, route: "incidentreport" },
         { label: "Residents Management", icon: <Person />, route: "residentmanagement" }
     ];
-
-
 
     const userManagementItems = [
         { label: "Roles", icon: <AdminPanelSettings />, route: "roles" },
@@ -177,7 +175,6 @@ export default function AuthenticatedLayout({ header = "Dashboard", children }) 
                     </List>
                 </Box>
             </Drawer>
-
 
             <Box
                 component="main"

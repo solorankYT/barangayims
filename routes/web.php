@@ -3,6 +3,9 @@
 use App\Http\Controllers\DocumentRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\IncidentReportController;
+
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -44,14 +47,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/residentmanagement/{id}', [ResidentController::class, 'destroy']);
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/incidentreport', [IncidentReportController::class, 'index'])->name('incidentreport');
+    Route::post('/incidentreport', [IncidentReportController::class, 'store']);
+    Route::put('/incidentreport/{id}', [IncidentReportController::class, 'update']);
+    Route::delete('/incidentreport/{id}', [IncidentReportController::class, 'destroy']);
+});
 
-Route::get('/incidentreport', function () {
-    return Inertia::render('IncidentReport');
-})->middleware(['auth', 'verified'])->name('incidentreport');
-
-Route::get('/admindocuments', function () {
-    return Inertia::render('AdminDocuments');
-})->middleware(['auth', 'verified'])->name('admindocuments');
+Route::middleware('auth')->group(function () {
+    Route::get('AdminDocuments', [DocumentRequestController::class, 'index'])->name('AdminDocuments');
+    Route::post('AdminDocuments', [DocumentRequestController::class, 'store']);
+    Route::put('AdminDocuments/{id}', [DocumentRequestController::class, 'update']);
+    Route::delete('AdminDocuments/{id}', [DocumentRequestController::class, 'destroy']);
+});
 
 
 Route::middleware('auth')->group(function () {

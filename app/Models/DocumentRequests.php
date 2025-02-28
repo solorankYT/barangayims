@@ -20,6 +20,10 @@ class DocumentRequests extends Model
         'documentID',
     ];
 
+    protected $attributes = [
+        'documentID' => null, // Default to NULL when creating a request
+    ];
+    
     public function user()
     {
         return $this->belongsTo(User::class, 'userID', 'id');

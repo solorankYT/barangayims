@@ -1,116 +1,166 @@
 import React, { useState } from "react";
-import { 
-  Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
-  TextField, IconButton, Typography 
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  IconButton,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  MenuItem,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import { Add, Edit } from "@mui/icons-material";
+import { Add, Edit, Delete } from "@mui/icons-material";
+import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const IncidentReport = () => {
-  // Sample incident data
-  const [incidents, setIncidents] = useState([
-    { id: 1, title: "Fire Outbreak", description: "Small fire at Barangay Hall", status: "Resolved" },
-    { id: 2, title: "Flood", description: "Heavy flooding near main street", status: "Ongoing" }
-  ]);
-
+  const { incidents = [], residents = [] } = usePage().props; 
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ id: null, title: "", description: "", status: "" });
+  const [isEditing, setIsEditing] = useState(false);
+  const [incidentData, setIncidentData] = useState({
+    id: null,
+    resident_id: "",
+    title: "",
+    incident_type: "",
+    description: "",
+    status: "",
+  });
 
-  // Open modal for adding or editing
-  const handleOpen = (incident = { id: null, title: "", description: "", status: "" }) => {
-    setFormData(incident);
+  const handleOpen = (incident = null) => {
+    setIsEditing(!!incident);
+    setIncidentData(
+      incident
+        ? { ...incident, resident_id: incident.resident?.id || "" } // Handle missing resident
+        : { id: null, resident_id: "", title: "", incident_type: "", description: "", status: "" }
+    );
     setOpen(true);
   };
 
-  // Close modal
-  const handleClose = () => setOpen(false);
-
-  // Handle form input changes
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleClose = () => {
+    setOpen(false);
+    setIncidentData({ id: null, resident_id: "", title: "", incident_type: "", description: "", status: "" });
   };
 
-  // Save incident (add or update)
   const handleSave = () => {
-    if (formData.id) {
-      setIncidents(incidents.map(inc => inc.id === formData.id ? formData : inc));
-    } else {
-      setIncidents([...incidents, { ...formData, id: incidents.length + 1 }]);
+    if (!incidentData.resident_id) {
+      alert("Resident is required.");
+      return;
     }
-    handleClose();
+
+    if (isEditing) {
+      router.put(`/incidentreport/${incidentData.id}`, incidentData, { onSuccess: () => handleClose() });
+    } else {
+      router.post("/incidentreport", incidentData, { onSuccess: () => handleClose() });
+    }
   };
 
-  // Define DataGrid columns
-  const columns = [
-    { field: "id", headerName: "ID", width: 70 },
-    { field: "title", headerName: "Title", width: 200 },
-    { field: "description", headerName: "Description", width: 300 },
-    { field: "status", headerName: "Status", width: 150 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 120,
-      renderCell: (params) => (
-        <IconButton color="primary" onClick={() => handleOpen(params.row)}>
-          <Edit />
-        </IconButton>
-      ),
-    },
-  ];
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this incident report?")) {
+      router.delete(`/incidentreport/${id}`);
+    }
+  };
 
   return (
-    <AuthenticatedLayout header="Incident Reports">
-    <Box sx={{ height: 400, width: "100%", p: 3 }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>Incident Reports</Typography>
-      
-      <Button 
-        variant="contained" 
-        startIcon={<Add />} 
-        onClick={() => handleOpen()}
-        sx={{ mb: 2 }}
-      >
-        Add Incident
-      </Button>
+    <AuthenticatedLayout>
+      <Box sx={{ width: "100%", padding: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Incident Reports
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          onClick={() => handleOpen()}
+          sx={{ mb: 2 }}
+        >
+          Add Incident
+        </Button>
 
-      <DataGrid rows={incidents} columns={columns} pageSize={5} />
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>ID</b></TableCell>
+                <TableCell><b>Resident</b></TableCell>
+                <TableCell><b>Title</b></TableCell>
+                <TableCell><b>Type</b></TableCell>
+                <TableCell><b>Description</b></TableCell>
+                <TableCell><b>Status</b></TableCell>
+                <TableCell><b>Actions</b></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {incidents.length > 0 ? (
+                incidents.map((incident) => (
+                  <TableRow key={incident.id}>
+                    <TableCell>{incident.id}</TableCell>
+                    <TableCell>{incident.resident?.name || "No Resident Assigned"}</TableCell>
+                    <TableCell>{incident.title}</TableCell>
+                    <TableCell>{incident.incident_type}</TableCell>
+                    <TableCell>{incident.description}</TableCell>
+                    <TableCell>{incident.status}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleOpen(incident)} color="primary">
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => handleDelete(incident.id)} color="error">
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    No incident reports found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      {/* Modal for Add/Edit Incident */}
-      <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>{formData.id ? "Edit Incident" : "Add Incident"}</DialogTitle>
-        <DialogContent>
-          <TextField 
-            label="Title" 
-            fullWidth 
-            margin="dense"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-          />
-          <TextField 
-            label="Description" 
-            fullWidth 
-            margin="dense"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            multiline
-          />
-          <TextField 
-            label="Status" 
-            fullWidth 
-            margin="dense"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">Cancel</Button>
-          <Button onClick={handleSave} variant="contained">Save</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>{isEditing ? "Edit Incident" : "Add Incident"}</DialogTitle>
+          <DialogContent>
+            {/* Resident Dropdown */}
+            <TextField
+              select
+              label="Resident"
+              fullWidth
+              margin="dense"
+              name="resident_id"
+              value={incidentData.resident_id}
+              onChange={(e) => setIncidentData({ ...incidentData, resident_id: e.target.value })}
+            >
+              <MenuItem value="">Select Resident</MenuItem>
+              {residents.map((resident) => (
+                <MenuItem key={resident.id} value={resident.id}>
+                  {resident.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField label="Title" fullWidth margin="dense" name="title" value={incidentData.title} onChange={(e) => setIncidentData({ ...incidentData, title: e.target.value })} />
+            <TextField label="Incident Type" fullWidth margin="dense" name="incident_type" value={incidentData.incident_type} onChange={(e) => setIncidentData({ ...incidentData, incident_type: e.target.value })} />
+            <TextField label="Description" fullWidth margin="dense" name="description" value={incidentData.description} onChange={(e) => setIncidentData({ ...incidentData, description: e.target.value })} multiline />
+            <TextField label="Status" fullWidth margin="dense" name="status" value={incidentData.status} onChange={(e) => setIncidentData({ ...incidentData, status: e.target.value })} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="secondary">Cancel</Button>
+            <Button onClick={handleSave} color="primary">{isEditing ? "Update" : "Save"}</Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </AuthenticatedLayout>
   );
 };

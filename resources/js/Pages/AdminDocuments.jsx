@@ -1,210 +1,191 @@
-import React, { useState, useEffect } from "react";
-import { usePage, router } from "@inertiajs/react";
+import React, { useState } from "react";
 import {
-  DataGrid,
-  GridActionsCellItem,
-} from "@mui/x-data-grid";
-import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
+  IconButton,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   MenuItem,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
+import { Add, Edit, Delete } from "@mui/icons-material";
+import { usePage, router } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const AdminDocuments = () => {
-  const { documentRequests, documentTypes, users } = usePage().props;
+  const { documentRequests = [], documentTypes = [], users = [] } = usePage().props;
   const [open, setOpen] = useState(false);
-  const [editingRow, setEditingRow] = useState(null);
-  const [formData, setFormData] = useState({
+  const [isEditing, setIsEditing] = useState(false);
+  const [documentData, setDocumentData] = useState({
+    id: null,
     userID: "",
     documentTypeID: "",
     status: "",
     purpose: "",
     remarks: "",
+    documentID: null, // Explicitly set as null for new requests
   });
 
-  useEffect(() => {
-    if (editingRow) {
-      setFormData({
-        userID: editingRow.userID,
-        documentTypeID: editingRow.documentTypeID,
-        status: editingRow.status,
-        purpose: editingRow.purpose,
-        remarks: editingRow.remarks,
-      });
-    } else {
-      setFormData({
-        userID: "",
-        documentTypeID: "",
-        status: "",
-        purpose: "",
-        remarks: "",
-      });
-    }
-  }, [editingRow]);
-
-  const handleOpen = (row = null) => {
-    setEditingRow(row);
+  const handleOpen = (document = null) => {
+    setIsEditing(!!document);
+    setDocumentData(
+      document
+        ? { ...document }
+        : { id: null, userID: "", documentTypeID: "", status: "", purpose: "", remarks: "", documentID: null }
+    );
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setEditingRow(null);
+    setDocumentData({ id: null, userID: "", documentTypeID: "", status: "", purpose: "", remarks: "", documentID: null });
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = () => {
-    if (editingRow) {
-      Inertia.put(`/admin/document-requests/${editingRow.documentRequestID}`, formData);
-    } else {
-      Inertia.post("/admin/document-requests", formData);
+  const handleSave = () => {
+    if (!documentData.userID || !documentData.documentTypeID) {
+      alert("User and Document Type are required.");
+      return;
     }
-    handleClose();
+
+    const dataToSubmit = {
+      ...documentData,
+      documentID: null, // Ensuring documentID is null when creating a request
+    };
+
+    if (isEditing) {
+      router.put(`/AdminDocuments/${documentData.id}`, dataToSubmit, { onSuccess: () => handleClose() });
+    } else {
+      router.post("/AdminDocuments", dataToSubmit, { onSuccess: () => handleClose() });
+    }
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this document request?")) {
-      Inertia.delete(`/admin/document-requests/${id}`);
+    if (window.confirm("Are you sure you want to delete this document request?")) {
+      router.delete(`/AdminDocuments/${id}`);
     }
   };
 
-  const columns = [
-    { field: "documentRequestID", headerName: "ID", width: 80 },
-    {
-      field: "userID",
-      headerName: "User",
-      width: 180,
-      valueGetter: (params) => {
-        const user = users.find((u) => u.id === params.row.userID);
-        return user ? `${user.name}` : "Unknown";
-      },
-    },
-    {
-      field: "documentTypeID",
-      headerName: "Document Type",
-      width: 200,
-      valueGetter: (params) => {
-        const docType = documentTypes.find((d) => d.documentTypeID === params.row.documentTypeID);
-        return docType ? docType.name : "Unknown";
-      },
-    },
-    { field: "status", headerName: "Status", width: 120 },
-    { field: "purpose", headerName: "Purpose", width: 250 },
-    { field: "remarks", headerName: "Remarks", width: 200 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 150,
-      type: "actions",
-      getActions: (params) => [
-        <GridActionsCellItem
-          icon={<EditIcon />}
-          label="Edit"
-          onClick={() => handleOpen(params.row)}
-        />,
-        <GridActionsCellItem
-          icon={<DeleteIcon />}
-          label="Delete"
-          onClick={() => handleDelete(params.row.documentRequestID)}
-          color="error"
-        />,
-      ],
-    },
-  ];
-
   return (
-    <div style={{ height: 600, width: "100%" }}>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={() => handleOpen()}
-      >
-        Add New Request
-      </Button>
-      <DataGrid rows={documentRequests} columns={columns} getRowId={(row) => row.documentRequestID} />
+    <AuthenticatedLayout>
+      <Box sx={{ width: "100%", padding: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Document Requests
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          onClick={() => handleOpen()}
+          sx={{ mb: 2 }}
+        >
+          Add New Request
+        </Button>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{editingRow ? "Edit Document Request" : "New Document Request"}</DialogTitle>
-        <DialogContent>
-          <TextField
-            select
-            fullWidth
-            margin="dense"
-            name="userID"
-            label="User"
-            value={formData.userID}
-            onChange={handleChange}
-          >
-            {users.map((user) => (
-              <MenuItem key={user.id} value={user.id}>
-                {user.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            fullWidth
-            margin="dense"
-            name="documentTypeID"
-            label="Document Type"
-            value={formData.documentTypeID}
-            onChange={handleChange}
-          >
-            {documentTypes.map((docType) => (
-              <MenuItem key={docType.documentTypeID} value={docType.documentTypeID}>
-                {docType.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            fullWidth
-            margin="dense"
-            name="status"
-            label="Status"
-            value={formData.status}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            margin="dense"
-            name="purpose"
-            label="Purpose"
-            value={formData.purpose}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            margin="dense"
-            name="remarks"
-            label="Remarks"
-            value={formData.remarks}
-            onChange={handleChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} color="primary">
-            {editingRow ? "Update" : "Create"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>ID</b></TableCell>
+                <TableCell><b>User</b></TableCell>
+                <TableCell><b>Document Type</b></TableCell>
+                <TableCell><b>Status</b></TableCell>
+                <TableCell><b>Purpose</b></TableCell>
+                <TableCell><b>Remarks</b></TableCell>
+                <TableCell><b>Actions</b></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {documentRequests.length > 0 ? (
+                documentRequests.map((doc) => (
+                  <TableRow key={doc.documentRequestID}>
+                    <TableCell>{doc.documentRequestID}</TableCell>
+                    <TableCell>{doc.user?.name || "Unknown User"}</TableCell>
+                    <TableCell>{doc.document_type?.name || "Unknown Document Type"}</TableCell>
+                    <TableCell>{doc.status}</TableCell>
+                    <TableCell>{doc.purpose}</TableCell>
+                    <TableCell>{doc.remarks}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleOpen(doc)} color="primary">
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => handleDelete(doc.documentRequestID)} color="error">
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    No document requests found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>{isEditing ? "Edit Document Request" : "New Document Request"}</DialogTitle>
+          <DialogContent>
+            {/* User Dropdown */}
+            <TextField
+              select
+              label="User"
+              fullWidth
+              margin="dense"
+              name="userID"
+              value={documentData.userID}
+              onChange={(e) => setDocumentData({ ...documentData, userID: e.target.value })}
+            >
+              <MenuItem value="">Select User</MenuItem>
+              {users.map((user) => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            {/* Document Type Dropdown */}
+            <TextField
+              select
+              label="Document Type"
+              fullWidth
+              margin="dense"
+              name="documentTypeID"
+              value={documentData.documentTypeID}
+              onChange={(e) => setDocumentData({ ...documentData, documentTypeID: e.target.value })}
+            >
+              <MenuItem value="">Select Document Type</MenuItem>
+              {documentTypes.map((docType) => (
+                <MenuItem key={docType.documentTypeID} value={docType.documentTypeID}>
+                  {docType.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField label="Status" fullWidth margin="dense" name="status" value={documentData.status} onChange={(e) => setDocumentData({ ...documentData, status: e.target.value })} />
+            <TextField label="Purpose" fullWidth margin="dense" name="purpose" value={documentData.purpose} onChange={(e) => setDocumentData({ ...documentData, purpose: e.target.value })} />
+            <TextField label="Remarks" fullWidth margin="dense" name="remarks" value={documentData.remarks} onChange={(e) => setDocumentData({ ...documentData, remarks: e.target.value })} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="secondary">Cancel</Button>
+            <Button onClick={handleSave} color="primary">{isEditing ? "Update" : "Save"}</Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </AuthenticatedLayout>
   );
-}
+};
 
 export default AdminDocuments;

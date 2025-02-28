@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('status');
             $table->string('purpose');
             $table->string('remarks');
-            $table->foreignId('documentID');
+            $table->foreignId('documentID')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             
             $table->foreign('userID')
                 ->references('id')
