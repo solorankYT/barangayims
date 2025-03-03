@@ -22,7 +22,6 @@ class DocumentRequestController extends Controller
             'users' => $users,
             'documentTypes' => $documentTypes,
         ]);
-
         return response()->json(['documentRequests' => $documentRequests, 'users' => $users, 'documentTypes' => $documentTypes]);
     }
 
@@ -39,7 +38,6 @@ class DocumentRequestController extends Controller
                 'remarks' => 'nullable|string|max:255',
             ]);
 
-            // Explicitly set documentID to NULL since it's not available yet
             $validated['documentID'] = null;
 
             $documentRequest = DocumentRequests::create($validated);
