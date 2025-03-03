@@ -16,9 +16,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  MenuItem,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
+import { Autocomplete } from "@mui/lab";
 import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
@@ -28,8 +28,8 @@ const AdminDocuments = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [documentData, setDocumentData] = useState({
     id: null,
-    userID: "",
-    documentTypeID: "",
+    userID: null,
+    documentTypeID: null,
     status: "",
     purpose: "",
     remarks: "",
@@ -41,14 +41,14 @@ const AdminDocuments = () => {
     setDocumentData(
       document
         ? { ...document }
-        : { id: null, userID: "", documentTypeID: "", status: "", purpose: "", remarks: "", documentID: null }
+        : { id: null, userID: null, documentTypeID: null, status: "", purpose: "", remarks: "", documentID: null }
     );
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setDocumentData({ id: null, userID: "", documentTypeID: "", status: "", purpose: "", remarks: "", documentID: null });
+    setDocumentData({ id: null, userID: null, documentTypeID: null, status: "", purpose: "", remarks: "", documentID: null });
   };
 
   const handleSave = () => {
@@ -76,11 +76,8 @@ const AdminDocuments = () => {
   };
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout header="Document and Record">
       <Box sx={{ width: "100%", padding: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Document Requests
-        </Typography>
         <Button
           variant="contained"
           color="primary"
@@ -135,44 +132,32 @@ const AdminDocuments = () => {
           </Table>
         </TableContainer>
 
+        {/* Add/Edit Document Request Dialog */}
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>{isEditing ? "Edit Document Request" : "New Document Request"}</DialogTitle>
           <DialogContent>
-            {/* User Dropdown */}
-            <TextField
-              select
-              label="User"
-              fullWidth
-              margin="dense"
-              name="userID"
-              value={documentData.userID}
-              onChange={(e) => setDocumentData({ ...documentData, userID: e.target.value })}
-            >
-              <MenuItem value="">Select User</MenuItem>
-              {users.map((user) => (
-                <MenuItem key={user.id} value={user.id}>
-                  {user.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            
+            {/* User Selection with Autocomplete */}
+            <Autocomplete
+              options={users}
+              getOptionLabel={(option) => option.name || ""}
+              value={users.find((user) => user.id === documentData.userID) || null}
+              onChange={(event, newValue) => {
+                setDocumentData({ ...documentData, userID: newValue ? newValue.id : null });
+              }}
+              renderInput={(params) => <TextField {...params} label="User" fullWidth margin="dense" />}
+            />
 
-            {/* Document Type Dropdown */}
-            <TextField
-              select
-              label="Document Type"
-              fullWidth
-              margin="dense"
-              name="documentTypeID"
-              value={documentData.documentTypeID}
-              onChange={(e) => setDocumentData({ ...documentData, documentTypeID: e.target.value })}
-            >
-              <MenuItem value="">Select Document Type</MenuItem>
-              {documentTypes.map((docType) => (
-                <MenuItem key={docType.documentTypeID} value={docType.documentTypeID}>
-                  {docType.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            {/* Document Type Selection with Autocomplete */}
+            <Autocomplete
+              options={documentTypes}
+              getOptionLabel={(option) => option.name || ""}
+              value={documentTypes.find((doc) => doc.documentTypeID === documentData.documentTypeID) || null}
+              onChange={(event, newValue) => {
+                setDocumentData({ ...documentData, documentTypeID: newValue ? newValue.documentTypeID : null });
+              }}
+              renderInput={(params) => <TextField {...params} label="Document Type" fullWidth margin="dense" />}
+            />
 
             <TextField label="Status" fullWidth margin="dense" name="status" value={documentData.status} onChange={(e) => setDocumentData({ ...documentData, status: e.target.value })} />
             <TextField label="Purpose" fullWidth margin="dense" name="purpose" value={documentData.purpose} onChange={(e) => setDocumentData({ ...documentData, purpose: e.target.value })} />

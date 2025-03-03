@@ -27,7 +27,9 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
 } from "@mui/icons-material";
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
+import IncidentReportForm from "./FileIncidentReport";
+import DocumentRequestForm from "./RequestDocuments";
 
 // Helper function for role-based UI
 const getAuthButtons = (auth) => {
@@ -134,6 +136,9 @@ const Navbar = ({ auth }) => {
 };
 
 const Welcome = ({ auth }) => {
+  const [openIncident, setOpenIncident] = useState(false);
+  const [openDocument, setOpenDocument] = useState(false);
+
   return (
     <>
       <Navbar auth={auth} />
@@ -169,14 +174,18 @@ const Welcome = ({ auth }) => {
           We provide a variety of services to support our residents.
         </Typography>
         <Box sx={{ display: "flex", justifyContent: "center", gap: 4 }}>
-          <Button variant="contained" color="secondary" startIcon={<Report />} component={Link} href="/incident-report">
+          <Button variant="contained" color="secondary" startIcon={<Report />} onClick={() => setOpenIncident(true)}>
             File Incident Report
           </Button>
-          <Button variant="contained" color="success" startIcon={<Description />} component={Link} href="/request-document">
+          <Button variant="contained" color="success" startIcon={<Description />} onClick={() => setOpenDocument(true)}>
             Request Document
           </Button>
         </Box>
       </Container>
+
+      {/* Modals */}
+      <IncidentReportForm open={openIncident} handleClose={() => setOpenIncident(false)} />
+      <DocumentRequestForm open={openDocument} handleClose={() => setOpenDocument(false)} />
 
       {/* About Section */}
       <Container id="about" sx={{ py: 6, textAlign: "center" }}>
@@ -201,11 +210,6 @@ const Welcome = ({ auth }) => {
           <Typography><EmailIcon /> barangay137@example.com</Typography>
         </Box>
       </Container>
-
-      {/* Footer Section */}
-      <Box sx={{ textAlign: "center", p: 3, background: "#f5f5f5", color: "gray" }}>
-        <Typography variant="body2">© 2025 Barangay 137. All Rights Reserved.</Typography>
-      </Box>
     </>
   );
 };

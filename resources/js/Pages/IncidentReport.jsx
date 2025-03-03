@@ -16,9 +16,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  MenuItem,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
+import { Autocomplete } from "@mui/lab";
 import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
@@ -28,7 +28,7 @@ const IncidentReport = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [incidentData, setIncidentData] = useState({
     id: null,
-    resident_id: "",
+    resident_id: null,
     title: "",
     incident_type: "",
     description: "",
@@ -39,15 +39,15 @@ const IncidentReport = () => {
     setIsEditing(!!incident);
     setIncidentData(
       incident
-        ? { ...incident, resident_id: incident.resident?.id || "" } // Handle missing resident
-        : { id: null, resident_id: "", title: "", incident_type: "", description: "", status: "" }
+        ? { ...incident, resident_id: incident.resident?.id || null } // Handle missing resident
+        : { id: null, resident_id: null, title: "", incident_type: "", description: "", status: "" }
     );
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setIncidentData({ id: null, resident_id: "", title: "", incident_type: "", description: "", status: "" });
+    setIncidentData({ id: null, resident_id: null, title: "", incident_type: "", description: "", status: "" });
   };
 
   const handleSave = () => {
@@ -70,11 +70,8 @@ const IncidentReport = () => {
   };
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout header="Incident Reports">
       <Box sx={{ width: "100%", padding: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Incident Reports
-        </Typography>
         <Button
           variant="contained"
           color="primary"
@@ -129,26 +126,21 @@ const IncidentReport = () => {
           </Table>
         </TableContainer>
 
+        {/* Add/Edit Incident Dialog */}
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>{isEditing ? "Edit Incident" : "Add Incident"}</DialogTitle>
           <DialogContent>
-            {/* Resident Dropdown */}
-            <TextField
-              select
-              label="Resident"
-              fullWidth
-              margin="dense"
-              name="resident_id"
-              value={incidentData.resident_id}
-              onChange={(e) => setIncidentData({ ...incidentData, resident_id: e.target.value })}
-            >
-              <MenuItem value="">Select Resident</MenuItem>
-              {residents.map((resident) => (
-                <MenuItem key={resident.id} value={resident.id}>
-                  {resident.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            
+            {/* Resident Autocomplete */}
+            <Autocomplete
+              options={residents}
+              getOptionLabel={(option) => option.name || ""}
+              value={residents.find((res) => res.id === incidentData.resident_id) || null}
+              onChange={(event, newValue) => {
+                setIncidentData({ ...incidentData, resident_id: newValue ? newValue.id : null });
+              }}
+              renderInput={(params) => <TextField {...params} label="Resident" fullWidth margin="dense" />}
+            />
 
             <TextField label="Title" fullWidth margin="dense" name="title" value={incidentData.title} onChange={(e) => setIncidentData({ ...incidentData, title: e.target.value })} />
             <TextField label="Incident Type" fullWidth margin="dense" name="incident_type" value={incidentData.incident_type} onChange={(e) => setIncidentData({ ...incidentData, incident_type: e.target.value })} />

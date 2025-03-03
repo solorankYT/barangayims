@@ -68,11 +68,9 @@ const Roles = () => {
   };
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout header="Roles Management">
       <Box sx={{ width: "100%", padding: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Role Management
-        </Typography>
+
         <Button
           variant="contained"
           color="primary"

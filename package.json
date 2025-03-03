@@ -25,6 +25,7 @@
         "@emotion/styled": "^11.14.0",
         "@inertiajs/inertia": "^0.11.1",
         "@mui/icons-material": "^6.4.5",
+        "@mui/lab": "^6.0.0-beta.29",
         "@mui/material": "^6.4.5",
         "@mui/toolpad-core": "^0.1.51",
         "@mui/x-data-grid": "^7.27.0"

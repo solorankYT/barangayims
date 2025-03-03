@@ -124,11 +124,8 @@ const ResidentManagement = () => {
   };
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout header="Resident Management">
       <Box sx={{ width: "100%", padding: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Resident Management
-        </Typography>
         <Button
           variant="contained"
           color="primary"

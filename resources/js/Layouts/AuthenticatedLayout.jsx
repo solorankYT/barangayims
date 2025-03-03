@@ -37,7 +37,7 @@ import { Inertia } from "@inertiajs/inertia";
 
 const drawerWidth = 260;
 
-export default function AuthenticatedLayout({ header = "Dashboard", children }) {
+export default function AuthenticatedLayout({ header , children }) {
     const { user } = usePage().props.auth;
     const [drawerOpen, setDrawerOpen] = useState(true);
     const [anchorEl, setAnchorEl] = useState(null);
