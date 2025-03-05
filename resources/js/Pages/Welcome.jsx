@@ -183,9 +183,9 @@ const Welcome = ({ auth }) => {
         </Box>
       </Container>
 
-      {/* Modals */}
+      {/* Modals
       <IncidentReportForm open={openIncident} handleClose={() => setOpenIncident(false)} />
-      <DocumentRequestForm open={openDocument} handleClose={() => setOpenDocument(false)} />
+      <DocumentRequestForm open={openDocument} handleClose={() => setOpenDocument(false)} /> */}
 
       {/* About Section */}
       <Container id="about" sx={{ py: 6, textAlign: "center" }}>
