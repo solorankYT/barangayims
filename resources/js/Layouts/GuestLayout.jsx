@@ -19,6 +19,7 @@ import {
   Dashboard as DashboardIcon,
   ExitToApp as ExitToAppIcon,
   RequestPage,
+  DocumentScanner,
 } from "@mui/icons-material";
 import { Link, usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia"; 
@@ -97,7 +98,7 @@ export default function GuestLayout({ children }) {
                     Dashboard
                   </MenuItem>
                   <MenuItem component={Link} href={route("requeststatus")} onClick={handleMenuClose}>
-                    <RequestPage sx={{ marginRight: 1 }} />
+                    <DocumentScanner sx={{ marginRight: 1 }} />
                     Request Status
                   </MenuItem>
                   <MenuItem onClick={handleLogout}>
