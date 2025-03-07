@@ -149,16 +149,21 @@ const AdminDocuments = () => {
               renderInput={(params) => <TextField {...params} label="User" fullWidth margin="dense" />}
             />
 
-            {/* Document Type Selection with Autocomplete */}
-            <Autocomplete
-              options={documentTypes}
-              getOptionLabel={(option) => option.name || ""}
-              value={documentTypes.find((doc) => doc.documentTypeID === documentData.documentTypeID) || null}
-              onChange={(event, newValue) => {
-                setDocumentData({ ...documentData, documentTypeID: newValue ? newValue.documentTypeID : null });
-              }}
-              renderInput={(params) => <TextField {...params} label="Document Type" fullWidth margin="dense" />}
-            />
+             <TextField
+                      select
+                      label="Document Type"
+                      fullWidth
+                      margin="dense"
+                      name="documentTypeID"
+                      value={documentData.documentTypeID}
+                      onChange={(e) => setDocumentData({ ...documentData, documentTypeID: e.target.value })}
+                    >
+                      <MenuItem value="Certificate of Indigency">Certificate of Indigency</MenuItem>
+                      <MenuItem value="Barangay Clearance">Barangay Clearance</MenuItem>
+                      <MenuItem value="First Time Job Seeker Certificate">First Time Job Seeker Certificate</MenuItem>
+                      <MenuItem value="Barangay Business Permit">Barangay Business Permit</MenuItem>
+                      <MenuItem value="Barangay Blotter Report">Barangay Blotter Report</MenuItem>
+                    </TextField>
             
             {isEditing && (
               <TextField

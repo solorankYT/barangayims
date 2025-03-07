@@ -21,8 +21,8 @@ class DocumentRequestController extends Controller
             'documentRequests' => $documentRequests,
             'users' => $users,
             'documentTypes' => $documentTypes,
-        ]);
-
+        ],
+    );
     }
 
     public function store(Request $request)
