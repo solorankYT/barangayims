@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('documents', function (Blueprint $table) {
-            $table->id('documentID');
-            $table->foreignId('documentRequestID');
+        Schema::create('certificates', function (Blueprint $table) {
+            $table->id('certificateID');
+            $table->foreignId('certificateRequestID');
             $table->string('fileName');
             $table->string('filePath');
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('documentRequestID')
-                ->references('documentRequestID')
-                ->on('document_requests');
+            $table->foreign('certificateRequestID')
+                ->references('certificateRequestID')
+                ->on('certificate_requests');
         });
     }
 
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('documents');
+        Schema::dropIfExists('certificates');
     }
 };

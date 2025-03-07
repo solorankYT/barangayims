@@ -16,6 +16,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  MenuItem,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
 import { Autocomplete } from "@mui/lab";
@@ -27,13 +28,13 @@ const AdminDocuments = () => {
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [documentData, setDocumentData] = useState({
-    id: null,
+    documentRequestID: null,
     userID: null,
     documentTypeID: null,
     status: "",
     purpose: "",
     remarks: "",
-    documentID: null, // Explicitly set as null for new requests
+    documentID: null,
   });
 
   const handleOpen = (document = null) => {
@@ -41,7 +42,7 @@ const AdminDocuments = () => {
     setDocumentData(
       document
         ? { ...document }
-        : { id: null, userID: null, documentTypeID: null, status: "", purpose: "", remarks: "", documentID: null }
+        : { documentRequestID: null, userID: null, documentTypeID: null, status: "", purpose: "", remarks: "", documentID: null }
     );
     setOpen(true);
   };
@@ -59,11 +60,11 @@ const AdminDocuments = () => {
 
     const dataToSubmit = {
       ...documentData,
-      documentID: null, // Ensuring documentID is null when creating a request
+      documentID: null,
     };
 
     if (isEditing) {
-      router.put(`/AdminDocuments/${documentData.id}`, dataToSubmit, { onSuccess: () => handleClose() });
+      router.put(`/AdminDocuments/${documentData.documentRequestID }`, dataToSubmit, { onSuccess: () => handleClose() });
     } else {
       router.post("/AdminDocuments", dataToSubmit, { onSuccess: () => handleClose() });
     }
@@ -158,8 +159,22 @@ const AdminDocuments = () => {
               }}
               renderInput={(params) => <TextField {...params} label="Document Type" fullWidth margin="dense" />}
             />
-
-            <TextField label="Status" fullWidth margin="dense" name="status" value={documentData.status} onChange={(e) => setDocumentData({ ...documentData, status: e.target.value })} />
+            
+            {isEditing && (
+              <TextField
+                select
+                label="Status"
+                fullWidth
+                margin="dense"
+                name="status"
+                value={documentData.status}
+                onChange={(e) => setDocumentData({ ...documentData, status: e.target.value })}
+              >
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Ongoing">Ongoing</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+              </TextField>
+            )}
             <TextField label="Purpose" fullWidth margin="dense" name="purpose" value={documentData.purpose} onChange={(e) => setDocumentData({ ...documentData, purpose: e.target.value })} />
             <TextField label="Remarks" fullWidth margin="dense" name="remarks" value={documentData.remarks} onChange={(e) => setDocumentData({ ...documentData, remarks: e.target.value })} />
           </DialogContent>

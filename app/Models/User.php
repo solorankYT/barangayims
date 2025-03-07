@@ -42,6 +42,11 @@ class User extends Authenticatable
 
     public function incidentReports()
     {
-        return $this->hasMany(IncidentReport::class, 'resident_id', 'id');
+        return $this->hasMany(IncidentReport::class, 'residentID', 'id');
+    }
+
+    public function documentRequests()
+    {
+        return $this->hasMany(DocumentRequests::class, 'userID', 'id');
     }
 }
