@@ -16,6 +16,6 @@ class Certificates extends Model
 
     public function certificateRequests()
     {
-        return $this->hasMany(CertificateRequests::class, 'certificateID', 'certificateID');
+        return $this->belongsTo(CertificateRequests::class, 'certificateRequestID', 'certificateRequestID');
     }
 }

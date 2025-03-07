@@ -4,6 +4,7 @@ use App\Http\Controllers\DocumentRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\IncidentReportController;
+use App\Http\Controllers\CertificateRequestsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -24,16 +25,16 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-
-Route::get('/admincertificate', function () {
-    return Inertia::render('AdminCertificate');
-})->name('admincertificate');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admincertificate', [CertificateRequestsController::class, 'index']) ->name('admincertificate');
+    Route::post('/admincertificate', [CertificateRequestsController::class, 'store']);
+    Route::put('/admincertificate/{id}', [CertificateRequestsController::class, 'update']);
+    Route::delete('/admincertificate/{id}', [CertificateRequestsController::class, 'destroy']);
+});
 
 Route::get('/requeststatus', function () {
     return Inertia::render('RequestStatus');
 })->name('requeststatus');
-
-
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/document-requests', [DocumentRequestController::class, 'index']) ->name('admindocuments');

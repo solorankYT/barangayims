@@ -1,149 +1,194 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Button, IconButton, TextField, Select, MenuItem, Dialog,
-  DialogTitle, DialogContent, DialogActions, Typography, FormControl,
-  InputLabel
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  IconButton,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  MenuItem,
 } from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { router, usePage } from "@inertiajs/react";
+import { Add, Edit, Delete } from "@mui/icons-material";
+import { Autocomplete } from "@mui/lab";
+import { usePage, router } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
-const AdminCertificate = () => {
-  const { applications } = usePage().props; // Fetch applications from backend
-  const [filteredApplications, setFilteredApplications] = useState(applications);
-  const [selectedApplication, setSelectedApplication] = useState(null);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+const AdminCertificateRequests = () => {
+  const { certificateRequests = [], users = [] } = usePage().props;
+  const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [certificateData, setCertificateData] = useState({
+    certificateRequestID: null,
+    userID: null,
+    certificateType: "",
+    status: "",
+    purpose: "",
+    remarks: "",
+    certificateID: null,
+  });
 
-  useEffect(() => {
-    let filtered = applications.filter(app => 
-      app.full_name.toLowerCase().includes(search.toLowerCase()) &&
-      (statusFilter ? app.status === statusFilter : true)
+  const handleOpen = (certificate = null) => {
+    setIsEditing(!!certificate);
+    setCertificateData(
+      certificate
+        ? { ...certificate }
+        : { certificateRequestID: null, userID: null, certificateType: "", status: "", purpose: "", remarks: "", certificateID: null }
     );
-    setFilteredApplications(filtered);
-  }, [search, statusFilter, applications]);
-
-  const handleView = (application) => {
-    setSelectedApplication(application);
+    setOpen(true);
   };
 
   const handleClose = () => {
-    setSelectedApplication(null);
+    setOpen(false);
+    setCertificateData({ certificateRequestID: null, userID: null, certificateType: "", status: "", purpose: "", remarks: "", certificateID: null });
   };
 
-  const handleUpdateStatus = (status) => {
-    router.put(`/certificate-application/${selectedApplication.id}`, { status }, {
-      onSuccess: () => {
-        handleClose();
-      },
-    });
+  const handleSave = () => {
+    if (!certificateData.userID || !certificateData.certificateType) {
+      alert("User and Certificate Type are required.");
+      return;
+    }
+
+    const dataToSubmit = {
+      ...certificateData,
+      certificateID: null,
+    };
+
+    if (isEditing) {
+      router.put(`/admincertificate/${certificateData.certificateRequestID}`, dataToSubmit, { onSuccess: () => handleClose() });
+    } else {
+      router.post("/admincertificate", dataToSubmit, { onSuccess: () => handleClose() });
+    }
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this certificate request?")) {
+      router.delete(`/admincertificate/${id}`);
+    }
   };
 
   return (
-    <div>
-      <Typography variant="h5" gutterBottom>Certificate Applications</Typography>
-      <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-        <TextField
-          label="Search by Name"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <FormControl variant="outlined" size="small">
-          <InputLabel>Status</InputLabel>
-          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} label="Status">
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Pending">Pending</MenuItem>
-            <MenuItem value="Approved">Approved</MenuItem>
-            <MenuItem value="Rejected">Rejected</MenuItem>
-          </Select>
-        </FormControl>
-      </div>
+    <AuthenticatedLayout header="Certificate Requests">
+      <Box sx={{ width: "100%", padding: 3 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          onClick={() => handleOpen()}
+          sx={{ mb: 2 }}
+        >
+          Add New Request
+        </Button>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell><b>Resident</b></TableCell>
-              <TableCell><b>Certificate Type</b></TableCell>
-              <TableCell><b>Purpose</b></TableCell>
-              <TableCell><b>Status</b></TableCell>
-              <TableCell><b>Actions</b></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredApplications.map((app) => (
-              <TableRow key={app.id}>
-                <TableCell>{app.full_name}</TableCell>
-                <TableCell>{app.certificate_type}</TableCell>
-                <TableCell>{app.purpose}</TableCell>
-                <TableCell>
-                  <span style={{
-                    color: app.status === "Approved" ? "green" : app.status === "Rejected" ? "red" : "orange"
-                  }}>
-                    {app.status}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <IconButton color="primary" onClick={() => handleView(app)}>
-                    <VisibilityIcon />
-                  </IconButton>
-                </TableCell>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>ID</b></TableCell>
+                <TableCell><b>User</b></TableCell>
+                <TableCell><b>Certificate Type</b></TableCell>
+                <TableCell><b>Status</b></TableCell>
+                <TableCell><b>Purpose</b></TableCell>
+                <TableCell><b>Remarks</b></TableCell>
+                <TableCell><b>Actions</b></TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {certificateRequests.length > 0 ? (
+                certificateRequests.map((cert) => (
+                  <TableRow key={cert.certificateRequestID}>
+                    <TableCell>{cert.certificateRequestID}</TableCell>
+                    <TableCell>{cert.user?.name || "Unknown User"}</TableCell>
+                    <TableCell>{cert.certificateType}</TableCell>
+                    <TableCell>{cert.status}</TableCell>
+                    <TableCell>{cert.purpose}</TableCell>
+                    <TableCell>{cert.remarks}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleOpen(cert)} color="primary">
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => handleDelete(cert.certificateRequestID)} color="error">
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    No certificate requests found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      {/* View Application Modal */}
-      {selectedApplication && (
-        <Dialog open={Boolean(selectedApplication)} onClose={handleClose} fullWidth maxWidth="sm">
-          <DialogTitle>Application Details</DialogTitle>
+        {/* Add/Edit Certificate Request Dialog */}
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>{isEditing ? "Edit Certificate Request" : "New Certificate Request"}</DialogTitle>
           <DialogContent>
-            <Typography><b>Resident:</b> {selectedApplication.full_name}</Typography>
-            <Typography><b>Date of Birth:</b> {selectedApplication.date_of_birth}</Typography>
-            <Typography><b>Sex:</b> {selectedApplication.sex}</Typography>
-            <Typography><b>Civil Status:</b> {selectedApplication.civil_status}</Typography>
-            <Typography><b>Contact Number:</b> {selectedApplication.contact_number}</Typography>
-            <Typography><b>Address:</b> {selectedApplication.address}</Typography>
-            <Typography><b>Certificate Type:</b> {selectedApplication.certificate_type}</Typography>
-            <Typography><b>Purpose:</b> {selectedApplication.purpose}</Typography>
-            {selectedApplication.supporting_document && (
-              <Typography>
-                <b>Supporting Document:</b> 
-                <a href={selectedApplication.supporting_document} target="_blank" rel="noopener noreferrer"> View</a>
-              </Typography>
+            
+            {/* User Selection with Autocomplete */}
+            <Autocomplete
+              options={users}
+              getOptionLabel={(option) => option.name || ""}
+              value={users.find((user) => user.id === certificateData.userID) || null}
+              onChange={(event, newValue) => {
+                setCertificateData({ ...certificateData, userID: newValue ? newValue.id : null });
+              }}
+              renderInput={(params) => <TextField {...params} label="User" fullWidth margin="dense" />}
+            />
+
+            {/* Certificate Type as a Simple Input */}
+            <TextField
+              select
+              label="Certificate Type"
+              fullWidth
+              margin="dense"
+              value={certificateData.certificateType}
+              onChange={(e) => setCertificateData({ ...certificateData, certificateType: e.target.value })}
+            >
+              <MenuItem value="Barangay Clearance">Barangay Clearance</MenuItem>
+              <MenuItem value="Certificate of Indigency">Certificate of Indigency</MenuItem>
+              <MenuItem value="First-Time Job Seeker Certificate">First-Time Job Seeker Certificate</MenuItem>
+            </TextField>
+              
+            {isEditing && (
+              <TextField
+                select
+                label="Status"
+                fullWidth
+                margin="dense"
+                name="status"
+                value={certificateData.status}
+                onChange={(e) => setCertificateData({ ...certificateData, status: e.target.value })}
+              >
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Ongoing">Ongoing</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+              </TextField>
             )}
-            {selectedApplication.business_name && (
-              <>
-                <Typography><b>Business Name:</b> {selectedApplication.business_name}</Typography>
-                <Typography><b>Business Owner:</b> {selectedApplication.business_owner}</Typography>
-                <Typography><b>Business Address:</b> {selectedApplication.business_address}</Typography>
-                <Typography><b>Nature of Business:</b> {selectedApplication.business_nature}</Typography>
-                <Typography><b>Business Registration No:</b> {selectedApplication.business_registration_number}</Typography>
-                {selectedApplication.business_documents && (
-                  <Typography>
-                    <b>Business Documents:</b> 
-                    <a href={selectedApplication.business_documents} target="_blank" rel="noopener noreferrer"> View</a>
-                  </Typography>
-                )}
-              </>
-            )}
+            <TextField label="Purpose" fullWidth margin="dense" name="purpose" value={certificateData.purpose} onChange={(e) => setCertificateData({ ...certificateData, purpose: e.target.value })} />
+            <TextField label="Remarks" fullWidth margin="dense" name="remarks" value={certificateData.remarks} onChange={(e) => setCertificateData({ ...certificateData, remarks: e.target.value })} />
           </DialogContent>
           <DialogActions>
-            {selectedApplication.status === "Pending" && (
-              <>
-                <Button onClick={() => handleUpdateStatus("Rejected")} color="error">Reject</Button>
-                <Button onClick={() => handleUpdateStatus("Approved")} color="primary" variant="contained">Approve</Button>
-              </>
-            )}
-            <Button onClick={handleClose}>Close</Button>
+            <Button onClick={handleClose} color="secondary">Cancel</Button>
+            <Button onClick={handleSave} color="primary">{isEditing ? "Update" : "Save"}</Button>
           </DialogActions>
         </Dialog>
-      )}
-    </div>
+      </Box>
+    </AuthenticatedLayout>
   );
 };
 
-export default AdminCertificate;
+export default AdminCertificateRequests;
