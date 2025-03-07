@@ -17,32 +17,34 @@ class DocumentRequestController extends Controller
         $users = User::select('id', 'name')->get();
         $documentTypes = DocumentTypes::select('documentTypeID', 'name')->get();
 
-        return Inertia::render('AdminDocuments', [ // Matches the exact filename AdminDocuments.jsx
+        return Inertia::render('AdminDocuments', [
             'documentRequests' => $documentRequests,
             'users' => $users,
             'documentTypes' => $documentTypes,
         ]);
-        return response()->json(['documentRequests' => $documentRequests, 'users' => $users, 'documentTypes' => $documentTypes]);
+
     }
 
     public function store(Request $request)
     {
         try {
-            Log::info('Received document request creation:', $request->all());
-
             $validated = $request->validate([
                 'userID' => 'required|exists:users,id',
                 'documentTypeID' => 'required|exists:document_types,documentTypeID',
-                'status' => 'required|string|max:50',
                 'purpose' => 'required|string|max:255',
                 'remarks' => 'nullable|string|max:255',
             ]);
 
             $validated['documentID'] = null;
 
-            $documentRequest = DocumentRequests::create($validated);
-
-            Log::info('Document request created successfully:', ['documentRequest' => $documentRequest]);
+            DocumentRequests::create([
+                'userID' => $request->userID,
+                'documentTypeID' => $request->documentTypeID,
+                'status' => "Pending",
+                'purpose' => $request->purpose,
+                'remarks' => $request->remarks,
+                'documentID' => null,
+            ]);
 
             return redirect()->route('AdminDocuments')->with('success', 'Document request created successfully.');
         } catch (\Exception $e) {
@@ -50,7 +52,6 @@ class DocumentRequestController extends Controller
             return back()->with('error', 'An error occurred while creating the document request.');
         }
     }
-
 
     public function update(Request $request, $id)
     {
@@ -67,7 +68,6 @@ class DocumentRequestController extends Controller
 
             $documentRequest->update($validated);
 
-            return redirect()->route('admin.documents')->with('success', 'Document request updated successfully.');
         } catch (\Exception $e) {
             Log::error('Error updating document request:', ['message' => $e->getMessage()]);
             return back()->with('error', 'An error occurred while updating the document request.');
@@ -80,10 +80,8 @@ class DocumentRequestController extends Controller
             $documentRequest = DocumentRequests::findOrFail($id);
             $documentRequest->delete();
 
-            return response()->json(['message' => 'Document request deleted successfully.']);
         } catch (\Exception $e) {
-            Log::error('Error deleting document request:', ['message' => $e->getMessage()]);
-            return response()->json(['error' => 'An error occurred while deleting the document request.'], 500);
+           
         }
     }
 }

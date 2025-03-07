@@ -16,6 +16,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  MenuItem,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
 import { Autocomplete } from "@mui/lab";
@@ -30,17 +31,18 @@ const IncidentReport = () => {
     id: null,
     resident_id: null,
     title: "",
-    incident_type: "",
+    incidentType: "",
     description: "",
     status: "",
   });
+  console.log("Incidents Data:", incidents);
 
   const handleOpen = (incident = null) => {
     setIsEditing(!!incident);
     setIncidentData(
       incident
-        ? { ...incident, resident_id: incident.resident?.id || null } // Handle missing resident
-        : { id: null, resident_id: null, title: "", incident_type: "", description: "", status: "" }
+        ? { ...incident, resident_id: incident.resident?.id || null, incidentType: incident.incidentType || "" }
+        : { id: null, resident_id: null, title: "", incidentType: "", description: "", status: "" }
     );
     setOpen(true);
   };
@@ -55,13 +57,21 @@ const IncidentReport = () => {
       alert("Resident is required.");
       return;
     }
-
+  
+    let dataToSubmit = { ...incidentData };
+  
+    if (!isEditing) {
+      delete dataToSubmit.id;
+      delete dataToSubmit.status;
+    }
+  
     if (isEditing) {
-      router.put(`/incidentreport/${incidentData.id}`, incidentData, { onSuccess: () => handleClose() });
+      router.put(`/incidentreport/${incidentData.id}`, dataToSubmit, { onSuccess: () => handleClose() });
     } else {
-      router.post("/incidentreport", incidentData, { onSuccess: () => handleClose() });
+      router.post("/incidentreport", dataToSubmit, { onSuccess: () => handleClose() });
     }
   };
+  
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this incident report?")) {
@@ -102,7 +112,7 @@ const IncidentReport = () => {
                     <TableCell>{incident.id}</TableCell>
                     <TableCell>{incident.resident?.name || "No Resident Assigned"}</TableCell>
                     <TableCell>{incident.title}</TableCell>
-                    <TableCell>{incident.incident_type}</TableCell>
+                    <TableCell>{incident.incidentType || "No Type Specified"}</TableCell>
                     <TableCell>{incident.description}</TableCell>
                     <TableCell>{incident.status}</TableCell>
                     <TableCell>
@@ -143,9 +153,37 @@ const IncidentReport = () => {
             />
 
             <TextField label="Title" fullWidth margin="dense" name="title" value={incidentData.title} onChange={(e) => setIncidentData({ ...incidentData, title: e.target.value })} />
-            <TextField label="Incident Type" fullWidth margin="dense" name="incident_type" value={incidentData.incident_type} onChange={(e) => setIncidentData({ ...incidentData, incident_type: e.target.value })} />
-            <TextField label="Description" fullWidth margin="dense" name="description" value={incidentData.description} onChange={(e) => setIncidentData({ ...incidentData, description: e.target.value })} multiline />
-            <TextField label="Status" fullWidth margin="dense" name="status" value={incidentData.status} onChange={(e) => setIncidentData({ ...incidentData, status: e.target.value })} />
+            <TextField
+              select
+              label="Incident Type"
+              fullWidth
+              margin="dense"
+              name="incidentType" 
+              value={incidentData.incidentType}
+              onChange={(e) => setIncidentData({ ...incidentData, incidentType: e.target.value })} // ✅ Match backend key
+            >
+              <MenuItem value="Noise Complaint">Noise Complaint</MenuItem>
+              <MenuItem value="Illegal Parking">Illegal Parking</MenuItem>
+              <MenuItem value="Robbery / Hold-up">Robbery / Hold-up</MenuItem>
+              <MenuItem value="Physical Assault">Physical Assault</MenuItem>
+              <MenuItem value="Theft">Theft</MenuItem>
+            </TextField>
+            <TextField label="Description" fullWidth margin="dense" name="description" value={incidentData.description} onChange={(e) => setIncidentData({ ...incidentData, description: e.target.value })} multiline /> 
+            {isEditing && (
+                <TextField
+                  select
+                  label="Status"
+                  fullWidth
+                  margin="dense"
+                  name="status"
+                  value={incidentData.status} 
+                  onChange={(e) => setIncidentData({ ...incidentData, status: e.target.value })}
+                >
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Ongoing">Ongoing</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                </TextField>
+              )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="secondary">Cancel</Button>

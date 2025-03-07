@@ -18,7 +18,7 @@ class DocumentRequests extends Model
     ];
 
     protected $attributes = [
-        'documentID' => null, // Default to NULL when creating a request
+        'documentID' => null, 
     ];
     
     public function user()
@@ -33,6 +33,6 @@ class DocumentRequests extends Model
 
     public function document()
     {
-        return $this->belongsTo(Documents::class, 'documentID', 'documentID');
+        return $this->hasOne(Documents::class, 'documentID', 'documentID');
     }
 }

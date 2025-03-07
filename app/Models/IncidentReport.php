@@ -10,15 +10,15 @@ class IncidentReport extends Model
     protected $table = 'incident_reports';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'resident_id',
+        'residentID',
         'title',
-        'incident_type',
+        'incidentType',
         'description',
         'status',
     ];
 
     public function resident()
     {
-        return $this->belongsTo(User::class, 'resident_id', 'id');
+        return $this->belongsTo(User::class, 'residentID', 'id');
     }
 }

@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('incident_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('resident_id');
+            $table->foreignId('residentID');
             $table->string('title');
-            $table->string('incident_type');
+            $table->string('incidentType');
             $table->text('description');
             $table->string('status')->default('pending');
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('resident_id')->references('id')->on('users');
+            $table->foreign('residentID')->references('id')->on('users');
         });
     }
 
