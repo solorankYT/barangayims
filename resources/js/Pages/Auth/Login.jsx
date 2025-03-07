@@ -5,6 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { Box, Container } from '@mui/material';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -23,6 +24,8 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
+            <Container>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", mt: 10 }}>
             <Head title="Log in" />
 
             {status && (
@@ -95,6 +98,8 @@ export default function Login({ status, canResetPassword }) {
                     </PrimaryButton>
                 </div>
             </form>
+            </Box>
+            </Container>
         </GuestLayout>
     );
 }

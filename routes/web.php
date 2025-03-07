@@ -29,6 +29,10 @@ Route::get('/admincertificate', function () {
     return Inertia::render('AdminCertificate');
 })->name('admincertificate');
 
+Route::get('/requeststatus', function () {
+    return Inertia::render('RequestStatus');
+})->name('requeststatus');
+
 
 
 Route::middleware(['auth'])->group(function () {

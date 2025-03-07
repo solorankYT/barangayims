@@ -16,14 +16,18 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Select,
+  MenuItem,
+  InputAdornment,
 } from "@mui/material";
-import { Add, Edit, Delete } from "@mui/icons-material";
+import { Add, Edit, Delete, Search } from "@mui/icons-material";
 import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const ResidentManagement = () => {
   const { residents } = usePage().props; 
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [residentData, setResidentData] = useState({
     id: "",
     name: "",
@@ -123,9 +127,32 @@ const ResidentManagement = () => {
     }
   };
 
+  const filteredResidents = residents.filter((resident) => 
+    resident.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    resident.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    resident.contact_number.includes(searchTerm)
+  );
+
   return (
     <AuthenticatedLayout header="Resident Management">
       <Box sx={{ width: "100%", padding: 3 }}>
+
+      <TextField
+          variant="outlined"
+          placeholder="Search by Name, Email, or Contact"
+          fullWidth
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ mb: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+        />
+
         <Button
           variant="contained"
           color="primary"
@@ -155,8 +182,8 @@ const ResidentManagement = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {residents.length > 0 ? (
-                residents.map((resident) => (
+              {filteredResidents.length > 0 ? (
+                filteredResidents.map((resident) => (
                   <TableRow key={resident.id}>
                     <TableCell>{resident.id}</TableCell>
                     <TableCell>{resident.name}</TableCell>
@@ -193,16 +220,30 @@ const ResidentManagement = () => {
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>{isEditing ? "Edit Resident" : "Add Resident"}</DialogTitle>
           <DialogContent>
+            <Typography variant="h6">Personal Information</Typography>
             <TextField label="Name" name="name" fullWidth margin="dense" value={residentData.name} onChange={(e) => setResidentData({ ...residentData, name: e.target.value })} />
             <TextField label="Birthday" name="birthday" type="date" fullWidth margin="dense" value={residentData.birthday} onChange={(e) => setResidentData({ ...residentData, birthday: e.target.value })} />
-            <TextField label="Gender" name="gender" fullWidth margin="dense" value={residentData.gender} onChange={(e) => setResidentData({ ...residentData, gender: e.target.value })} />
-            <TextField label="Email" name="email" type="email" fullWidth margin="dense" value={residentData.email} onChange={(e) => setResidentData({ ...residentData, email: e.target.value })} />
+            <Select
+              fullWidth
+              displayEmpty
+              value={residentData.gender}
+              onChange={(e) => setResidentData({ ...residentData, gender: e.target.value })}
+              sx={{ mt: 1 }}
+            >
+              <MenuItem value="">Select Gender</MenuItem>
+              <MenuItem value="Male">Male</MenuItem>
+              <MenuItem value="Female">Female</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
+            </Select>
             <TextField label="Contact Number" name="contact_number" fullWidth margin="dense" value={residentData.contact_number} onChange={(e) => setResidentData({ ...residentData, contact_number: e.target.value })} />
+           <Typography variant="h6">Address Information</Typography>
             <TextField label="Address" name="address" fullWidth margin="dense" value={residentData.address} onChange={(e) => setResidentData({ ...residentData, address: e.target.value })} />
             <TextField label="City" name="city" fullWidth margin="dense" value={residentData.city} onChange={(e) => setResidentData({ ...residentData, city: e.target.value })} />
             <TextField label="State" name="state" fullWidth margin="dense" value={residentData.state} onChange={(e) => setResidentData({ ...residentData, state: e.target.value })} />
             <TextField label="Zip Code" name="zip_code" fullWidth margin="dense" value={residentData.zip_code} onChange={(e) => setResidentData({ ...residentData, zip_code: e.target.value })} />
             <TextField label="Household Number" name="household_number" fullWidth margin="dense" value={residentData.household_number} onChange={(e) => setResidentData({ ...residentData, household_number: e.target.value })} />
+           <Typography variant="h6">Account Information</Typography>
+            <TextField label="Email" name="email" type="email" fullWidth margin="dense" value={residentData.email} onChange={(e) => setResidentData({ ...residentData, email: e.target.value })} />
             {!isEditing && (
               <TextField label="Password" name="password" type="password" fullWidth margin="dense" value={residentData.password} onChange={(e) => setResidentData({ ...residentData, password: e.target.value })} />
             )}

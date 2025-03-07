@@ -38,15 +38,15 @@ const RequestDocuments = ({ open, handleClose }) => {
       <DialogContent>
         <TextField label="User" fullWidth margin="dense" value={auth.user.name}  />
 
-        <Autocomplete
-          options={documentTypes}
-          getOptionLabel={(option) => option.name || ""}
-          value={documentTypes.find((doc) => doc.documentTypeID === documentData.documentTypeID) || null}
-          onChange={(event, newValue) => {
-            setDocumentData({ ...documentData, documentTypeID: newValue ? newValue.documentTypeID : null });
-          }}
-          renderInput={(params) => <TextField {...params} label="Document Type" fullWidth margin="dense" />}
-        />
+          <Autocomplete
+                     options={documentTypes}
+                     getOptionLabel={(option) => option.name || ""}
+                     value={documentTypes.find((doc) => doc.documentTypeID === documentData.documentTypeID) || null}
+                     onChange={(event, newValue) => {
+                       setDocumentData({ ...documentData, documentTypeID: newValue ? newValue.documentTypeID : null });
+                     }}
+                     renderInput={(params) => <TextField {...params} label="Document Type" fullWidth margin="dense" />}
+                   />
 
         <TextField name="purpose" label="Purpose" fullWidth margin="dense" onChange={handleChange} />
         <TextField name="remarks" label="Remarks" fullWidth margin="dense" onChange={handleChange} />

@@ -1,36 +1,125 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
+import React, { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Avatar,
+  Container,
+  Typography,
+} from "@mui/material";
+import {
+  Home as HomeIcon,
+  Info as InfoIcon,
+  Contacts as ContactsIcon,
+  MiscellaneousServices as ServicesIcon,
+  Dashboard as DashboardIcon,
+  ExitToApp as ExitToAppIcon,
+  RequestPage,
+} from "@mui/icons-material";
+import { Link, usePage } from "@inertiajs/react";
+import { Inertia } from "@inertiajs/inertia"; 
+
 
 export default function GuestLayout({ children }) {
-    return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                textAlign: "center",
-                backgroundImage: "url('https://plus.unsplash.com/premium_photo-1722704537052-04209596bf4e?q=80&w=2071&auto=format&fit=crop')",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                color: "white",
-                paddingTop: "1.5rem",
-            }}
-        >
-            <div>
-                <Link href="/">
-                    <img
-                    src="https://upload.wikimedia.org/wikipedia/en/e/e8/Barangay_League_Logo.png"
-                    alt="Barangay Logo"
-                    style={{ width: 100, height: 100, marginRight: 10 }}
-                    />
-                </Link>
-            </div>
+  const { auth } = usePage().props; 
+  const [anchorEl, setAnchorEl] = useState(null);
 
-            <div className="mt-6 overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md lg:w-full rounded-lg">
-                {children}
-            </div>
-        </div>
-    );
+  // Handle User Profile dropdown
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    Inertia.post(route("logout")); 
+    handleMenuClose();
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Navbar */}
+      <AppBar position="static" sx={{ background: "#1976d2", padding: "5px 20px" }}>
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          {/* Logo */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Link href="/">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/en/e/e8/Barangay_League_Logo.png"
+                alt="Barangay Logo"
+                style={{ width: 50, height: 50, marginRight: 10 }}
+              />
+            </Link>
+          </Box>
+
+          {/* Navigation */}
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button color="inherit" component={Link} href="/" startIcon={<HomeIcon />}>
+              Home
+            </Button>
+            <Button color="inherit" component={Link} href="#about" startIcon={<InfoIcon />}>
+              About
+            </Button>
+            <Button color="inherit" component={Link} href="#services" startIcon={<ServicesIcon />}>
+              Services
+            </Button>
+            <Button color="inherit" component={Link} href="#contact" startIcon={<ContactsIcon />}>
+              Contact
+            </Button>
+          </Box>
+
+          {/* Authentication/User Profile */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {!auth.user ? (
+              <>
+                <Button color="inherit" component={Link} href={route("login")}>
+                  Login
+                </Button>
+                <Button color="inherit" component={Link} href={route("register")}>
+                  Register
+                </Button>
+              </>
+            ) : (
+              <>
+
+                <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+                  <Avatar sx={{ bgcolor: "secondary.main" }}>{auth.user.name.charAt(0)}</Avatar>
+                </IconButton>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                  <MenuItem component={Link} href={route("dashboard")} onClick={handleMenuClose}>
+                    <DashboardIcon sx={{ marginRight: 1 }} />
+                    Dashboard
+                  </MenuItem>
+                  <MenuItem component={Link} href={route("requeststatus")} onClick={handleMenuClose}>
+                    <RequestPage sx={{ marginRight: 1 }} />
+                    Request Status
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>
+                    <ExitToAppIcon sx={{ marginRight: 1 }} />
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+
+      <div style={{ flex: 1 }}>{children}</div>
+
+  
+      <footer style={{ background: "#1976d2", color: "white", textAlign: "center", padding: "10px 0", marginTop: "auto" }}>
+        <Container>
+          <Typography variant="body2">© 2025 Barangay 137. All rights reserved.</Typography>
+        </Container>
+      </footer>
+    </div>
+  );
 }
