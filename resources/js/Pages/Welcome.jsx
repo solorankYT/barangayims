@@ -28,17 +28,13 @@ import {
   Email as EmailIcon,
   WorkspacePremium,
 } from "@mui/icons-material";
-import { Link, usePage } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import FileIncidentReport from "./FileIncidentReport";
 import RequestDocuments from "./RequestDocuments";
 import CertificateApplication from "./CertificateApplication";
 
 // Helper function for role-based UI
 const getAuthButtons = (auth) => {
-  const userRoles = auth?.user?.roles || [];
-  const isBarangayOfficial = userRoles.includes("Barangay Captain") || userRoles.includes("Barangay Secretary");
-  const isResident = userRoles.includes("Resident");
-
   if (!auth.user) {
     return (
       <>
@@ -52,15 +48,11 @@ const getAuthButtons = (auth) => {
     );
   }
 
-  return isBarangayOfficial ? (
+  return (
     <Button color="inherit" component={Link} href={route("dashboard")} startIcon={<DashboardIcon />} aria-label="Go to Dashboard">
       Dashboard
     </Button>
-  ) :  (
-    <Button color="inherit" component={Link} href={route("logout")} method="post" as="button" startIcon={<ExitToAppIcon />} aria-label="Logout">
-      Logout
-    </Button>
-  ) 
+  );
 };
 
 const Navbar = ({ auth }) => {
@@ -142,6 +134,14 @@ const Welcome = ({ auth }) => {
   const [openDocument, setOpenDocument] = useState(false);
   const [openCertificate, setOpenCertificate] = useState(false);
 
+  const handleButtonClick = (setter) => {
+    if (!auth.user) {
+      alert("You need to log in first to access this feature.");
+      return;
+    }
+    setter(true);
+  };
+
   return (
     <>
       <Navbar auth={auth} />
@@ -165,7 +165,9 @@ const Welcome = ({ auth }) => {
         <Typography variant="h3" gutterBottom>
           Welcome to Barangay 137
         </Typography>
-        <Typography variant="h5">Building a Stronger, Safer, and More Connected Community</Typography>
+        <Typography variant="h5">
+          Building a Stronger, Safer, and More Connected Community
+        </Typography>
       </Box>
 
       {/* Services Section */}
@@ -177,22 +179,26 @@ const Welcome = ({ auth }) => {
           We provide a variety of services to support our residents.
         </Typography>
         <Box sx={{ display: "flex", justifyContent: "center", gap: 4 }}>
-          <Button variant="contained" color="secondary" startIcon={<Report />} onClick={() => setOpenIncident(true)}>
+          <Button variant="contained" color="secondary" startIcon={<Report />} onClick={() => handleButtonClick(setOpenIncident)}>
             File Incident Report
           </Button>
-          <Button variant="contained" color="success" startIcon={<Description />} onClick={() => setOpenDocument(true)}>
+          <Button variant="contained" color="success" startIcon={<Description />} onClick={() => handleButtonClick(setOpenDocument)}>
             Request Document
           </Button>
-          <Button variant="contained" color="success" startIcon={<WorkspacePremium />} onClick={() => setOpenCertificate(true)}>
+          <Button variant="contained" color="success" startIcon={<WorkspacePremium />} onClick={() => handleButtonClick(setOpenCertificate)}>
             Request Certificate
           </Button>
         </Box>
       </Container>
 
-      {/* Modals */}
-      <FileIncidentReport open={openIncident} handleClose={() => setOpenIncident(false)} />
-      <RequestDocuments open={openDocument} handleClose={() => setOpenDocument(false)} />
-      <CertificateApplication open={openCertificate} handleClose={() => setOpenCertificate(false)} />
+      {/* Modals (Only render if user is logged in) */}
+      {auth.user && (
+        <>
+          <FileIncidentReport open={openIncident} handleClose={() => setOpenIncident(false)} />
+          <RequestDocuments open={openDocument} handleClose={() => setOpenDocument(false)} />
+          <CertificateApplication open={openCertificate} handleClose={() => setOpenCertificate(false)} />
+        </>
+      )}
 
       {/* About Section */}
       <Container id="about" sx={{ py: 6, textAlign: "center" }}>
@@ -200,7 +206,7 @@ const Welcome = ({ auth }) => {
           About Barangay 137
         </Typography>
         <Typography variant="body1" sx={{ color: "text.secondary" }}>
-          Barangay 137 is a small community in Pasay City known for its strong sense of unity and support. Our local government is committed to ensuring the welfare and development of our residents.
+          Barangay 137 is a small community in Pasay City known for its strong sense of unity and support.
         </Typography>
       </Container>
 
@@ -208,9 +214,6 @@ const Welcome = ({ auth }) => {
       <Container id="contact" sx={{ py: 6, textAlign: "center" }}>
         <Typography variant="h4" gutterBottom>
           Contact Us
-        </Typography>
-        <Typography variant="body1" sx={{ color: "text.secondary", mb: 2 }}>
-          Reach out to us for any assistance.
         </Typography>
         <Box>
           <Typography><PhoneIcon /> +63 912 345 6789</Typography>
