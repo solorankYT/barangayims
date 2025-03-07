@@ -32,7 +32,7 @@ export default function Login({ status, canResetPassword }) {
             )}
 
             <form onSubmit={submit}>
-                <div>
+                <div className='text-left'>
                     <InputLabel htmlFor="email" value="Email" />
 
                     <TextInput
@@ -49,7 +49,7 @@ export default function Login({ status, canResetPassword }) {
                     <InputError message={errors.email} className="mt-2" />
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-4 text-left">
                     <InputLabel htmlFor="password" value="Password" />
 
                     <TextInput
