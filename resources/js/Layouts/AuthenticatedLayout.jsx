@@ -49,10 +49,10 @@ export default function AuthenticatedLayout({ header , children }) {
     const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
     const handleMenuClose = () => setAnchorEl(null);
 
-    const handleLogout = () => {
-        handleMenuClose();
-        Inertia.post(route("logout"));
-    };
+  const handleLogout = () => {
+    Inertia.post(route("logout")); 
+    handleMenuClose();
+  };
 
     const navItems = [
         { label: "Dashboard", icon: <DashboardIcon />, route: "dashboard" },
