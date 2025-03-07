@@ -1,4 +1,5 @@
 import GuestLayout from '@/Layouts/GuestLayout';
+import { Container, Box, Typography } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 
 const RequestStatus = () => {
@@ -12,37 +13,13 @@ const RequestStatus = () => {
 
     return (
         <GuestLayout>
-        <div>
-            <h2>Request Status</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Request Type</th>
-                        <th>Reference No.</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {requests.map(req => (
-                        <tr key={req.id}>
-                            <td>{req.request_type}</td>
-                            <td>{req.reference_no}</td>
-                            <td>{req.created_at}</td>
-                            <td>
-                                <span className={`status ${req.status.toLowerCase()}`}>
-                                    {req.status}
-                                </span>
-                            </td>
-                            <td>
-                                <button>View</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+            <Container>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", mt: 10 }}>
+                    <Typography variant="h4" gutterBottom>
+                        Request Status
+                    </Typography>
+                </Box>
+            </Container>
         </GuestLayout>
     );
 };

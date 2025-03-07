@@ -105,6 +105,31 @@ const Welcome = ({ auth }) => {
         </Box>
       </Container>
 
+
+      <Container id="about" sx={{ py: 6, textAlign: "center" }}>
+        <Box sx={{ mt: 5 }}>
+          <Typography variant="h4" fontWeight={600}>About Us</Typography>
+          <Typography variant="body1">
+            We are committed to building a stronger, safer, and more connected community.
+          </Typography>
+        </Box>
+      </Container>
+
+      <Container id="contact" sx={{ py: 6, textAlign: "center" }}>
+        <Box sx={{ mt: 5 }}>
+          <Typography variant="h4" fontWeight={600}>Contact Us</Typography>
+          <Typography variant="body1">
+            Barangay 137, Zone 12, District 1, Caloocan City
+          </Typography>
+          <Typography variant="body1">
+            #09123456789
+          </Typography>
+          <Typography variant="body1">
+            captain@example.com
+          </Typography>
+          </Box>
+      </Container>
+
       {auth.user && (
         <>
           <FileIncidentReport open={openIncident} handleClose={() => setOpenIncident(false)} />
@@ -119,6 +144,8 @@ const Welcome = ({ auth }) => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+     
     </GuestLayout>
   );
 };
