@@ -26,10 +26,12 @@ import {
   MiscellaneousServices as ServicesIcon,
   Phone as PhoneIcon,
   Email as EmailIcon,
+  WorkspacePremium,
 } from "@mui/icons-material";
 import { Link, usePage } from "@inertiajs/react";
-import IncidentReportForm from "./FileIncidentReport";
-import DocumentRequestForm from "./RequestDocuments";
+import FileIncidentReport from "./FileIncidentReport";
+import RequestDocuments from "./RequestDocuments";
+import CertificateApplication from "./CertificateApplication";
 
 // Helper function for role-based UI
 const getAuthButtons = (auth) => {
@@ -54,11 +56,11 @@ const getAuthButtons = (auth) => {
     <Button color="inherit" component={Link} href={route("dashboard")} startIcon={<DashboardIcon />} aria-label="Go to Dashboard">
       Dashboard
     </Button>
-  ) : isResident ? (
+  ) :  (
     <Button color="inherit" component={Link} href={route("logout")} method="post" as="button" startIcon={<ExitToAppIcon />} aria-label="Logout">
       Logout
     </Button>
-  ) : null;
+  ) 
 };
 
 const Navbar = ({ auth }) => {
@@ -138,6 +140,7 @@ const Navbar = ({ auth }) => {
 const Welcome = ({ auth }) => {
   const [openIncident, setOpenIncident] = useState(false);
   const [openDocument, setOpenDocument] = useState(false);
+  const [openCertificate, setOpenCertificate] = useState(false);
 
   return (
     <>
@@ -180,12 +183,16 @@ const Welcome = ({ auth }) => {
           <Button variant="contained" color="success" startIcon={<Description />} onClick={() => setOpenDocument(true)}>
             Request Document
           </Button>
+          <Button variant="contained" color="success" startIcon={<WorkspacePremium />} onClick={() => setOpenCertificate(true)}>
+            Request Certificate
+          </Button>
         </Box>
       </Container>
 
       {/* Modals */}
-      <IncidentReportForm open={openIncident} handleClose={() => setOpenIncident(false)} />
-      <DocumentRequestForm open={openDocument} handleClose={() => setOpenDocument(false)} />
+      <FileIncidentReport open={openIncident} handleClose={() => setOpenIncident(false)} />
+      <RequestDocuments open={openDocument} handleClose={() => setOpenDocument(false)} />
+      <CertificateApplication open={openCertificate} handleClose={() => setOpenCertificate(false)} />
 
       {/* About Section */}
       <Container id="about" sx={{ py: 6, textAlign: "center" }}>

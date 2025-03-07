@@ -10,9 +10,9 @@ import {
 import { usePage, router } from "@inertiajs/react";
 
 const FileIncidentReport = ({ open, handleClose }) => {
-  const { auth } = usePage().props; // Get logged-in user
+  const { auth } = usePage().props; 
   const [incidentData, setIncidentData] = useState({
-    resident_id: auth.user.id, // Set the logged-in resident's ID
+    resident_id: auth.user.id, 
     title: "",
     incident_type: "",
     description: "",
@@ -31,8 +31,7 @@ const FileIncidentReport = ({ open, handleClose }) => {
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>File an Incident Report</DialogTitle>
       <DialogContent>
-        {/* Pre-filled and disabled resident name */}
-        <TextField label="Resident" fullWidth margin="dense" value={auth.user.name} disabled />
+        <TextField label="Resident" fullWidth margin="dense" value={auth.user.name}  />
 
         <TextField name="title" label="Title" fullWidth margin="dense" onChange={handleChange} />
         <TextField name="incident_type" label="Incident Type" fullWidth margin="dense" onChange={handleChange} />

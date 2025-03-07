@@ -24,6 +24,13 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
+Route::get('/admincertificate', function () {
+    return Inertia::render('AdminCertificate');
+})->name('admincertificate');
+
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/document-requests', [DocumentRequestController::class, 'index']) ->name('admindocuments');
     Route::post('/document-requests', [DocumentRequestController::class, 'store']);

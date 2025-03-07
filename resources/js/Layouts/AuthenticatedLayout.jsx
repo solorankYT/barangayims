@@ -30,7 +30,9 @@ import {
     Report,
     Person,
     AdminPanelSettings,
-    VerifiedUser
+    VerifiedUser,
+    SystemSecurityUpdate,
+    Map
 } from "@mui/icons-material";
 import { Link, usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
@@ -54,14 +56,16 @@ export default function AuthenticatedLayout({ header , children }) {
 
     const navItems = [
         { label: "Dashboard", icon: <DashboardIcon />, route: "dashboard" },
-        { label: "Certificate Application", icon: <PostAdd />, route: "dashboard" },
+        { label: "Certificate Application", icon: <PostAdd />, route: "admincertificate" },
         { label: "Document and Record", icon: <Article />, route: "AdminDocuments" }, 
         { label: "Incident Reports", icon: <Report />, route: "incidentreport" },
-        { label: "Residents Management", icon: <Person />, route: "residentmanagement" }
     ];
 
     const userManagementItems = [
-        { label: "Roles", icon: <AdminPanelSettings />, route: "roles" },
+        { label: "Residents Management", icon: <Person />, route: "residentmanagement" },
+        { label: "Roles Management", icon: <AdminPanelSettings />, route: "roles" },
+        { label: "System Management", icon: <SystemSecurityUpdate />, route: "roles" },
+        { label: "Evacuation Site Management", icon: <Map />, route: "roles" },
     ];
 
     return (
@@ -140,7 +144,7 @@ export default function AuthenticatedLayout({ header , children }) {
                     <Divider sx={{ bgcolor: "#ddd", my: 1 }} />
 
                     <Typography variant="subtitle2" sx={{ p: 2, color: "gray", fontWeight: "bold" }}>
-                        User Management
+                     Management
                     </Typography>
                     <List>
                         {userManagementItems.map((item) => (
