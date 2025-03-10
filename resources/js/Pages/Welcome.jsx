@@ -1,5 +1,18 @@
 import React, { useState } from "react";
-import { Box, Typography, Container, Button, Snackbar, Alert } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Container,
+  Button,
+  Snackbar,
+  Alert,
+  Card,
+  CardContent,
+  CardActions,
+  FormControl,
+  TextField,
+  Grid
+} from "@mui/material";
 import { Report, Description, WorkspacePremium } from "@mui/icons-material";
 import GuestLayout from "@/Layouts/GuestLayout";
 import FileIncidentReport from "./FileIncidentReport";
@@ -27,7 +40,7 @@ const Welcome = ({ auth }) => {
       {/* Hero Section */}
       <Box
         sx={{
-          height: { xs: "50vh", md: "70vh" },
+          height: { xs: "50vh", md: "90vh" },
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -47,6 +60,14 @@ const Welcome = ({ auth }) => {
         <Typography variant="h5" sx={{ color: "#FFA725", maxWidth: "600px", textShadow: "2px 2px 6px rgba(0,0,0,0.5)" }}>
           Building a Stronger, Safer, and More Connected Community
         </Typography>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          sx={{ mt: 3 }} 
+          onClick={() => document.getElementById("services").scrollIntoView({ behavior: "smooth" })}
+        >
+          Explore Services
+        </Button>
       </Box>
 
       {/* Services Section */}
@@ -54,58 +75,46 @@ const Welcome = ({ auth }) => {
         <Typography variant="h4" fontWeight={600} gutterBottom>
           Services We Offer
         </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: 2,
-            mt: 3,
-          }}
-        >
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<Report />}
-            onClick={() => handleButtonClick(setOpenIncident)}
-            sx={{
-              minWidth: "220px",
-              transition: "0.3s",
-              "&:hover": { transform: "scale(1.05)" },
-            }}
-          >
-            File Incident Report
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<Description />}
-            onClick={() => handleButtonClick(setOpenDocument)}
-            sx={{
-              minWidth: "220px",
-              transition: "0.3s",
-              "&:hover": { transform: "scale(1.05)" },
-            }}
-          >
-            Request Document
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<WorkspacePremium />}
-            onClick={() => handleButtonClick(setOpenCertificate)}
-            sx={{
-              minWidth: "220px",
-              transition: "0.3s",
-              "&:hover": { transform: "scale(1.05)" },
-            }}
-          >
-            Request Certificate
-          </Button>
+        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 3, mt: 3 }}>
+          {[
+            { title: "File Incident Report", icon: <Report />, color: "secondary", action: setOpenIncident },
+            { title: "Request Document", icon: <Description />, color: "success", action: setOpenDocument },
+            { title: "Request Certificate", icon: <WorkspacePremium />, color: "primary", action: setOpenCertificate },
+          ].map((service, index) => (
+            <Card key={index} sx={{ minWidth: 250, transition: "0.3s", "&:hover": { transform: "scale(1.05)" } }}>
+              <CardContent>
+                <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+                  {service.icon}
+                </Box>
+                <Typography variant="h6" fontWeight={600}>{service.title}</Typography>
+              </CardContent>
+              <CardActions>
+                <Button 
+                  fullWidth 
+                  variant="contained" 
+                  color={service.color} 
+                  onClick={() => handleButtonClick(service.action)}
+                >
+                  Proceed
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
+        </Box>
+      </Container>
+
+         {/* Evacuation Section */}
+         <Container id="about" sx={{ py: 6, textAlign: "center" }}>
+        <Box sx={{ mt: 5 }}>
+          <Typography variant="h4" fontWeight={600}>Evacuation Site</Typography>
+          <Typography variant="body1">
+            This Section is for the Evacuation Site of Barangay 137 Caloocan City in case of Emergency. 
+          </Typography>
         </Box>
       </Container>
 
 
+      {/* About Section */}
       <Container id="about" sx={{ py: 6, textAlign: "center" }}>
         <Box sx={{ mt: 5 }}>
           <Typography variant="h4" fontWeight={600}>About Us</Typography>
@@ -115,21 +124,63 @@ const Welcome = ({ auth }) => {
         </Box>
       </Container>
 
-      <Container id="contact" sx={{ py: 6, textAlign: "center" }}>
-        <Box sx={{ mt: 5 }}>
-          <Typography variant="h4" fontWeight={600}>Contact Us</Typography>
-          <Typography variant="body1">
-            Barangay 137, Zone 12, District 1, Caloocan City
-          </Typography>
-          <Typography variant="body1">
-            #09123456789
-          </Typography>
-          <Typography variant="body1">
-            captain@example.com
-          </Typography>
-          </Box>
-      </Container>
+      {/* Contact Section */}
+      <Container id="contact" sx={{ py: 6 }}>
+  <Typography variant="h4" fontWeight={600} textAlign="center">
+    Contact Us
+  </Typography>
 
+  <Grid container spacing={4} sx={{ mt: 4 }}>
+    <Grid item xs={12} md={6}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography variant="body1">
+          <strong>📍 Address:</strong> Barangay 137, Zone 12, District 1, Caloocan City
+        </Typography>
+        <Typography variant="body1">
+          <strong>📞 Phone:</strong> #09123456789
+        </Typography>
+        <Typography variant="body1">
+          <strong>✉️ Email:</strong> captain@example.com
+        </Typography>
+      </Box>
+    </Grid>
+
+    {/* Contact Form Column */}
+    <Grid item xs={12} md={6}>
+      <Box sx={{ p: 3, border: "1px solid #ddd", borderRadius: 2, boxShadow: 2 }}>
+        <Typography variant="h6" fontWeight={600} mb={2}>
+          Send Us a Message
+        </Typography>
+        <TextField 
+          label="Your Name" 
+          variant="outlined" 
+          fullWidth 
+          sx={{ mb: 2 }} 
+        />
+        <TextField 
+          label="Your Email" 
+          type="email" 
+          variant="outlined" 
+          fullWidth 
+          sx={{ mb: 2 }} 
+        />
+        <TextField 
+          label="Your Message" 
+          variant="outlined" 
+          fullWidth 
+          multiline 
+          rows={4} 
+          sx={{ mb: 2 }} 
+        />
+        <Button variant="contained" color="primary" fullWidth>
+          Send Message
+        </Button>
+      </Box>
+    </Grid>
+  </Grid>
+</Container>
+
+      {/* Modals for Authenticated Users */}
       {auth.user && (
         <>
           <FileIncidentReport open={openIncident} handleClose={() => setOpenIncident(false)} />
@@ -139,13 +190,11 @@ const Welcome = ({ auth }) => {
       )}
 
       {/* Snackbar for Login Alert */}
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+      <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
         <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: "100%" }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-     
     </GuestLayout>
   );
 };

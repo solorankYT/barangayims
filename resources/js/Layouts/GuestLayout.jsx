@@ -46,7 +46,7 @@ export default function GuestLayout({ children }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Navbar */}
-      <AppBar position="static" sx={{ background: "#1976d2", padding: "5px 20px" }}>
+      <AppBar position="static" sx={{ background: "#ffffff", color: '#000000', padding: "5px 20px" }}>
         <Toolbar sx={{ justifyContent: "space-between" }}>
           {/* Logo */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
