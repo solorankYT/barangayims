@@ -65,7 +65,7 @@ export default function AuthenticatedLayout({ header , children }) {
         { label: "Residents Management", icon: <Person />, route: "residentmanagement" },
         { label: "Roles Management", icon: <AdminPanelSettings />, route: "roles" },
         { label: "System Management", icon: <SystemSecurityUpdate />, route: "roles" },
-        { label: "Evacuation Site Management", icon: <Map />, route: "roles" },
+        { label: "Evacuation Site Management", icon: <Map />, route: "evacucationsitelist" },
     ];
 
     return (

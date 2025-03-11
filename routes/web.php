@@ -36,6 +36,18 @@ Route::get('/requeststatus', function () {
     return Inertia::render('RequestStatus');
 })->name('requeststatus');
 
+
+Route::get('/evacuationsitemanagement', function () {
+    return Inertia::render('EvacuationSiteManagement');
+})->name('evacuationsitemanagement');
+
+Route::get('/evacucationsitelist', function () {
+    return Inertia::render('EvacuationSiteList');
+})->name('evacucationsitelist');
+
+
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/document-requests', [DocumentRequestController::class, 'index']) ->name('admindocuments');
     Route::post('/document-requests', [DocumentRequestController::class, 'store']);
