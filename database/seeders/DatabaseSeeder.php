@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->seedRoles();
         $this->seedUsers();
         $this->seedDocumentTypes();
+        $this->seedSites();
     }
 
     /**
@@ -142,7 +143,7 @@ class DatabaseSeeder extends Seeder
                 'site_name' => 'Barangay Hall Evacuation Center',
                 'location' => 'Barangay 137, Quezon City, Metro Manila',
                 'capacity' => 500,
-                'status' => 'Open',
+                'status' => 'Active',
                 'resources' => 'Food, Water, Medical Supplies',
                 'contact_person' => 'Captain Juan Dela Cruz',
                 'contact_number' => '09123456789',
@@ -153,7 +154,7 @@ class DatabaseSeeder extends Seeder
                 'site_name' => 'Public School Gymnasium',
                 'location' => 'Barangay 145, Manila City, Metro Manila',
                 'capacity' => 700,
-                'status' => 'Open',
+                'status' => 'Active',
                 'resources' => 'Food, Blankets, First Aid',
                 'contact_person' => 'Brgy. Kagawad Maria Santos',
                 'contact_number' => '09987654321',
@@ -164,7 +165,7 @@ class DatabaseSeeder extends Seeder
                 'site_name' => 'Barangay Covered Court',
                 'location' => 'Barangay 112, Caloocan City, Metro Manila',
                 'capacity' => 300,
-                'status' => 'Closed',
+                'status' => 'Full',
                 'resources' => 'None (Under Maintenance)',
                 'contact_person' => 'Brgy. Sec. Pedro Dizon',
                 'contact_number' => '09231234567',
