@@ -19,13 +19,12 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Add, Edit, Delete, Search } from "@mui/icons-material";
-import { Autocomplete } from "@mui/lab";
+import { Autocomplete } from "@mui/material";
 import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const AdminDocuments = () => {
   const { documentRequests = [], documentTypes = [], users = [] } = usePage().props;
-
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,9 +32,10 @@ const AdminDocuments = () => {
     documentRequestID: null,
     userID: null,
     documentTypeID: null,
-    status: "",
+    status: "Pending", // Default status as per backend logic
     purpose: "",
     remarks: "",
+    documentID: null, // Always null for new requests
   });
 
   const handleOpen = (document = null) => {
@@ -43,39 +43,49 @@ const AdminDocuments = () => {
     setDocumentData(
       document
         ? { ...document }
-        : { documentRequestID: null, userID: null, documentTypeID: null, status: "", purpose: "", remarks: "" }
+        : { documentRequestID: null, userID: null, documentTypeID: null, status: "Pending", purpose: "", remarks: "", documentID: null }
     );
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setDocumentData({ documentRequestID: null, userID: null, documentTypeID: null, status: "", purpose: "", remarks: "" });
+    setDocumentData({ documentRequestID: null, userID: null, documentTypeID: null, status: "Pending", purpose: "", remarks: "", documentID: null });
   };
 
   const handleSave = () => {
-    if (!documentData.userID || !documentData.documentTypeID) {
-      alert("User and Document Type are required.");
+    if (!documentData.userID || !documentData.documentTypeID || !documentData.purpose) {
+      alert("User, Document Type, and Purpose are required.");
       return;
     }
 
+    const dataToSubmit = {
+      userID: documentData.userID,
+      documentTypeID: documentData.documentTypeID,
+      purpose: documentData.purpose,
+      remarks: documentData.remarks,
+      documentID: null, // Backend expects null
+      status: isEditing ? documentData.status : "Pending", // Default status when creating a new request
+    };
+
     if (isEditing) {
-      router.put(`/AdminDocuments/${documentData.documentRequestID}`, documentData, { onSuccess: handleClose });
+      router.put(`/AdminDocuments/${documentData.documentRequestID}`, dataToSubmit, { onSuccess: () => handleClose() });
     } else {
-      router.post("/AdminDocuments", documentData, { onSuccess: handleClose });
+      router.post("/AdminDocuments", dataToSubmit, { onSuccess: () => handleClose() });
     }
   };
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this document request?")) {
-      router.delete(`/AdminDocuments/${id}`);
+      router.delete(`/AdminDocuments/${id}`, { onSuccess: () => setOpen(false) });
     }
   };
 
+  // Filtered document requests based on search term
   const filteredDocuments = documentRequests.filter((doc) =>
-    [doc.documentRequestID.toString(), doc.user?.name, doc.document_type?.name, doc.status, doc.purpose, doc.remarks]
-      .filter(Boolean)
-      .some((field) => field.toLowerCase().includes(searchTerm.toLowerCase()))
+    doc.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.document_type?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -98,11 +108,16 @@ const AdminDocuments = () => {
           }}
         />
 
-        <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => handleOpen()} sx={{ mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          onClick={() => handleOpen()}
+          sx={{ mb: 2 }}
+        >
           Add New Request
         </Button>
 
-        {/* Document Requests Table */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -147,67 +162,34 @@ const AdminDocuments = () => {
           </Table>
         </TableContainer>
 
-        {/* Add/Edit Dialog */}
+        {/* Add/Edit Document Request Dialog */}
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>{isEditing ? "Edit Document Request" : "New Document Request"}</DialogTitle>
           <DialogContent>
+            {/* User Selection with Autocomplete */}
             <Autocomplete
               options={users}
               getOptionLabel={(option) => option.name || ""}
               value={users.find((user) => user.id === documentData.userID) || null}
-              onChange={(event, newValue) => setDocumentData({ ...documentData, userID: newValue ? newValue.id : null })}
-              renderInput={(params) => <TextField {...params} label="User" fullWidth margin="dense" />}
+              onChange={(event, newValue) => {
+                setDocumentData((prev) => ({ ...prev, userID: newValue ? newValue.id : null }));
+              }}
+              renderInput={(params) => <TextField {...params} label="User" fullWidth margin="dense" required />}
             />
 
-            <TextField
-              select
-              label="Document Type"
-              fullWidth
-              margin="dense"
-              name="documentTypeID"
-              value={documentData.documentTypeID}
-              onChange={(e) => setDocumentData({ ...documentData, documentTypeID: e.target.value })}
-            >
-              {documentTypes.map((type) => (
-                <MenuItem key={type.id} value={type.id}>
-                  {type.name}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            {isEditing && (
-              <TextField
-                select
-                label="Status"
-                fullWidth
-                margin="dense"
-                name="status"
-                value={documentData.status}
-                onChange={(e) => setDocumentData({ ...documentData, status: e.target.value })}
-              >
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Ongoing">Ongoing</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-              </TextField>
-            )}
-
-            <TextField
-              label="Purpose"
-              fullWidth
-              margin="dense"
-              name="purpose"
-              value={documentData.purpose}
-              onChange={(e) => setDocumentData({ ...documentData, purpose: e.target.value })}
+            {/* Document Type Selection with Autocomplete */}
+            <Autocomplete
+              options={documentTypes}
+              getOptionLabel={(option) => option.name || ""}
+              value={documentTypes.find((doc) => doc.documentTypeID === documentData.documentTypeID) || null}
+              onChange={(event, newValue) => {
+                setDocumentData((prev) => ({ ...prev, documentTypeID: newValue ? newValue.documentTypeID : null }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Document Type" fullWidth margin="dense" required />}
             />
 
-            <TextField
-              label="Remarks"
-              fullWidth
-              margin="dense"
-              name="remarks"
-              value={documentData.remarks}
-              onChange={(e) => setDocumentData({ ...documentData, remarks: e.target.value })}
-            />
+            <TextField label="Purpose" fullWidth margin="dense" name="purpose" value={documentData.purpose} onChange={(e) => setDocumentData({ ...documentData, purpose: e.target.value })} required />
+            <TextField label="Remarks" fullWidth margin="dense" name="remarks" value={documentData.remarks} onChange={(e) => setDocumentData({ ...documentData, remarks: e.target.value })} />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="secondary">Cancel</Button>
