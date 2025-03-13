@@ -19,6 +19,9 @@ import FileIncidentReport from "./FileIncidentReport";
 import RequestDocuments from "./RequestDocuments";
 import CertificateApplication from "./CertificateApplication";
 import { Inertia } from "@inertiajs/inertia";
+import EvacuationSite from "@/Components/EvacuationGallery";
+import EvacuationMap from "@/Components/EvacuationMap";
+import EvacuationGallery from "@/Components/EvacuationGallery";
 
 const Welcome = ({ auth }) => {
   const [openIncident, setOpenIncident] = useState(false);
@@ -111,6 +114,8 @@ const Welcome = ({ auth }) => {
             This Section is for the Evacuation Site of Barangay 137 Caloocan City in case of Emergency. 
           </Typography>
         </Box>
+        <EvacuationGallery />
+        <EvacuationMap />
       </Container>
 
 

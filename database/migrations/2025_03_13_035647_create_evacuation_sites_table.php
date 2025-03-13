@@ -20,6 +20,8 @@ return new class extends Migration
             $table->json('resources')->nullable(); 
             $table->string('contact_person');
             $table->string('contact_number', 15);
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
             $table->timestamps();
         });
     }

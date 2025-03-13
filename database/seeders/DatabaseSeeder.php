@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\EvacuationSite;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
@@ -83,6 +84,9 @@ class DatabaseSeeder extends Seeder
         }
     }
 
+
+
+
     /**
      * Seed document types into the database.
      */
@@ -116,6 +120,8 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
+
+
         foreach ($documentTypes as $type) {
             DB::table('document_types')->updateOrInsert(
                 ['name' => $type['name']], // Unique identifier
@@ -126,6 +132,49 @@ class DatabaseSeeder extends Seeder
                     'updated_at' => Carbon::now(),
                 ]
             );
+        }
+    }
+    
+    public function seedSites()
+    {
+        $sites = [
+            [
+                'site_name' => 'Barangay Hall Evacuation Center',
+                'location' => 'Barangay 137, Quezon City, Metro Manila',
+                'capacity' => 500,
+                'status' => 'Open',
+                'resources' => 'Food, Water, Medical Supplies',
+                'contact_person' => 'Captain Juan Dela Cruz',
+                'contact_number' => '09123456789',
+                'latitude' => 14.6505, 
+                'longitude' => 121.0349, 
+            ],
+            [
+                'site_name' => 'Public School Gymnasium',
+                'location' => 'Barangay 145, Manila City, Metro Manila',
+                'capacity' => 700,
+                'status' => 'Open',
+                'resources' => 'Food, Blankets, First Aid',
+                'contact_person' => 'Brgy. Kagawad Maria Santos',
+                'contact_number' => '09987654321',
+                'latitude' => 14.5995,
+                'longitude' => 120.9842,
+            ],
+            [
+                'site_name' => 'Barangay Covered Court',
+                'location' => 'Barangay 112, Caloocan City, Metro Manila',
+                'capacity' => 300,
+                'status' => 'Closed',
+                'resources' => 'None (Under Maintenance)',
+                'contact_person' => 'Brgy. Sec. Pedro Dizon',
+                'contact_number' => '09231234567',
+                'latitude' => 14.7573,
+                'longitude' => 120.9561,
+            ]
+        ];
+
+        foreach ($sites as $site) {
+            EvacuationSite::create($site);
         }
     }
 }
