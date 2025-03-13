@@ -144,6 +144,16 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
             </Grid>
           )}
 
+          {/* Map with Marker */}
+          <Grid item xs={12}>
+            <MapContainer center={center} zoom={12} style={{ height: "300px", width: "100%" }}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {formik.values.latitude && formik.values.longitude && (
+                <Marker position={[formik.values.latitude, formik.values.longitude]} />
+              )}
+            </MapContainer>
+          </Grid>
+
           {/* Capacity */}
           <Grid item xs={12}>
             <TextField
@@ -205,28 +215,7 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
             />
           </Grid>
 
-          {/* Additional Notes */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Additional Notes"
-              name="additionalNotes"
-              multiline
-              rows={3}
-              value={formik.values.additionalNotes}
-              onChange={formik.handleChange}
-            />
-          </Grid>
-
-          {/* Map with Marker */}
-          <Grid item xs={12}>
-            <MapContainer center={center} zoom={12} style={{ height: "300px", width: "100%" }}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              {formik.values.latitude && formik.values.longitude && (
-                <Marker position={[formik.values.latitude, formik.values.longitude]} />
-              )}
-            </MapContainer>
-          </Grid>
+ 
 
           {/* Submit Button */}
           <Grid item xs={12} style={{ textAlign: "center" }}>
