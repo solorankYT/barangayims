@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('status');
             $table->string('purpose');
             $table->string('remarks');
-            $table->foreignId('certificateID')->nullable();
             $table->timestamps();
             $table->softDeletes();
             
@@ -26,9 +25,6 @@ return new class extends Migration
                 ->references('id')
                 ->on('users');
 
-            $table->foreign('certificateID')
-                ->references('certificateID')
-                ->on('certificates');
         });
     }
 

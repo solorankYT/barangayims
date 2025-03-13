@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('status');
             $table->string('purpose');
             $table->string('remarks');
-            $table->foreignId('documentID')->nullable();
             $table->timestamps();
             $table->softDeletes();
             
@@ -29,10 +28,6 @@ return new class extends Migration
             $table->foreign('documentTypeID')
                 ->references('documentTypeID')
                 ->on('document_types');
-
-            $table->foreign('documentID')
-                ->references('documentID')
-                ->on('documents');
         });
     }
 
