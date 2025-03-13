@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\IncidentReportController;
 use App\Http\Controllers\CertificateRequestsController;
+use App\Http\Controllers\EvacuationSiteController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -41,12 +42,12 @@ Route::get('/evacuationsitemanagement', function () {
     return Inertia::render('EvacuationSiteManagement');
 })->name('evacuationsitemanagement');
 
-Route::get('/evacucationsitelist', function () {
-    return Inertia::render('EvacuationSiteList');
-})->name('evacucationsitelist');
-
-
-
+Route::middleware(['auth'])->group(function () {
+    Route::get('/evacucationsitelist', [EvacuationSiteController::class, 'index']) ->name('evacucationsitelist');
+    Route::post('/evacucationsitelist', [EvacuationSiteController::class, 'store']);
+    Route::put('/evacucationsitelist/{id}', [EvacuationSiteController::class, 'update']);
+    Route::delete('/evacucationsitelist/{id}', [EvacuationSiteController::class, 'destroy']);
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/document-requests', [DocumentRequestController::class, 'index']) ->name('admindocuments');
