@@ -3,16 +3,11 @@ import {
   TextField,
   Button,
   Grid,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
   Typography,
   Paper,
   Checkbox,
   FormGroup,
   FormControlLabel,
-  Snackbar,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -32,17 +27,13 @@ L.Icon.Default.mergeOptions({
 const center = [14.5995, 120.9842]; // Default: Manila
 
 const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
-  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
 
   const formik = useFormik({
     initialValues: {
-      siteName: initialValues.siteName || "",
-      location: initialValues.location || "",
-      latitude: initialValues.latitude || "",
-      longitude: initialValues.longitude || "",
-      capacity: initialValues.capacity || "",
-      status: initialValues.status || "Active",
+      id: initialValues.id || "",
+      contact_person: initialValues.contact_person || "",
+      contact_number: initialValues.contact_number || "",
       resources: initialValues.resources || {
         food: false,
         water: false,
@@ -52,29 +43,16 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
         restrooms: false,
         shelter: false,
       },
-      contactPerson: initialValues.contactPerson || "",
-      contactNumber: initialValues.contactNumber || "",
-      additionalNotes: initialValues.additionalNotes || "",
+      status: initialValues.status || "Active",
+      capacity: initialValues.capacity || "",
     },
     validationSchema: Yup.object({
-      siteName: Yup.string().required("Site Name is required"),
-      location: Yup.string().required("Location is required"),
-      latitude: Yup.number().required("Please select a location"),
-      longitude: Yup.number().required("Please select a location"),
-      capacity: Yup.number()
-        .required("Capacity is required")
-        .positive("Must be positive")
-        .integer("Must be a whole number"),
+      capacity: Yup.number().required("Capacity is required"),
       status: Yup.string().required("Status is required"),
-      contactPerson: Yup.string().required("Contact Person is required"),
-      contactNumber: Yup.string()
-        .matches(/^[0-9]+$/, "Must be numeric")
-        .min(10, "Must be at least 10 digits")
-        .required("Contact Number is required"),
+      contact_person: Yup.string().required("Contact Person is required"),
+      contact_number: Yup.string().required("Contact Number is required"),
     }),
     onSubmit: (values) => {
-      console.log("Form Submitted:", values);
-      setOpenSnackbar(true);
       onSubmit(values);
     },
   });
@@ -95,7 +73,7 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
   return (
     <Paper elevation={3} style={{ padding: "20px", maxWidth: "700px", margin: "auto" }}>
       <Typography variant="h5" gutterBottom>
-        {initialValues.siteName ? "Edit Evacuation Site" : "Add Evacuation Site"}
+        {initialValues.site_name ? "Edit Evacuation Site" : "Add Evacuation Site"}
       </Typography>
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={2}>
@@ -104,12 +82,12 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
             <TextField
               fullWidth
               label="Site Name"
-              name="siteName"
-              value={formik.values.siteName}
+              name="site_name"
+              value={formik.values.site_name}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.touched.siteName && Boolean(formik.errors.siteName)}
-              helperText={formik.touched.siteName && formik.errors.siteName}
+              error={formik.touched.site_name && Boolean(formik.errors.site_name)}
+              helperText={formik.touched.site_name && formik.errors.site_name}
             />
           </Grid>
 
@@ -198,8 +176,8 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
             <TextField
               fullWidth
               label="Contact Person"
-              name="contactPerson"
-              value={formik.values.contactPerson}
+              name="contact_person"
+              value={formik.values.contact_person}
               onChange={formik.handleChange}
             />
           </Grid>
@@ -209,18 +187,16 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
             <TextField
               fullWidth
               label="Contact Number"
-              name="contactNumber"
-              value={formik.values.contactNumber}
+              name="contact_number"
+              value={formik.values.contact_number}
               onChange={formik.handleChange}
             />
           </Grid>
 
- 
-
           {/* Submit Button */}
           <Grid item xs={12} style={{ textAlign: "center" }}>
             <Button type="submit" variant="contained" color="primary">
-              {initialValues.siteName ? "Update Site" : "Add Site"}
+              {initialValues.site_name ? "Update Site" : "Add Site"}
             </Button>
           </Grid>
         </Grid>

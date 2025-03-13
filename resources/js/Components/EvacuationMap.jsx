@@ -18,9 +18,9 @@ const EvacuationMap = () => {
     const [selectedSite, setSelectedSite] = useState(null); 
 
     useEffect(() => {
-        fetch("/api/evacuation-sites") 
+        fetch("/evacuationSites")
             .then((response) => response.json())
-            .then((data) => setSites(data))
+            .then((data) => setSites(data.evacuationSites || [])) 
             .catch((error) => console.error("Error fetching sites:", error));
     }, []);
 
@@ -28,12 +28,11 @@ const EvacuationMap = () => {
         <div style={{ height: "500px", width: "100%" }}>
             <MapContainer center={center} zoom={12} style={{ height: "100%", width: "100%" }}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
                 {sites.map((site) => (
                     <Marker key={site.id} position={[site.latitude, site.longitude]}
                         eventHandlers={{ click: () => setSelectedSite(site) }}>
                         <Popup>
-                            <Typography variant="body1"><strong>{site.name}</strong></Typography>
+                            <Typography variant="body1"><strong>{site.site_name}</strong></Typography> {/* ✅ Fix */}
                             <Typography variant="body2">{site.location}</Typography>
                             <Typography variant="caption">Click for more info</Typography>
                         </Popup>

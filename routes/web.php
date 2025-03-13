@@ -6,6 +6,7 @@ use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\IncidentReportController;
 use App\Http\Controllers\CertificateRequestsController;
 use App\Http\Controllers\EvacuationSiteController;
+use App\Http\Controllers\WeatherDataController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -42,11 +43,13 @@ Route::get('/evacuationsitemanagement', function () {
     return Inertia::render('EvacuationSiteManagement');
 })->name('evacuationsitemanagement');
 
+Route::get('/evacucationsitelist', function () {
+    return Inertia::render('EvacuationSiteList');
+})->name('evacucationsitelist');
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/evacucationsitelist', [EvacuationSiteController::class, 'index']) ->name('evacucationsitelist');
-    Route::post('/evacucationsitelist', [EvacuationSiteController::class, 'store']);
-    Route::put('/evacucationsitelist/{id}', [EvacuationSiteController::class, 'update']);
-    Route::delete('/evacucationsitelist/{id}', [EvacuationSiteController::class, 'destroy']);
+    Route::get('/evacuationSites', [EvacuationSiteController::class, 'index']);
+    Route::post('/evacuationSites', [EvacuationSiteController::class, 'store']);
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -91,5 +94,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/currentWeather', [WeatherDataController::class, 'fetchAndStoreWeatherData']);
+Route::get('/weatherData', [WeatherDataController::class, 'index']);
+
 
 require __DIR__.'/auth.php';

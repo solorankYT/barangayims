@@ -19,19 +19,26 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
-import EvacuationSiteManagement from "./EvacuationSiteManagement"; // Import the form
+import EvacuationSiteManagement from "./EvacuationSiteManagement"; 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const EvacuationSiteList = () => {
   const [sites, setSites] = useState([]);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
-
+  const [selectedSite, setSelectedSite] = useState(null);
+  
   useEffect(() => {
-    axios.get("/api/evacuation-sites")
-      .then((response) => setSites(response.data))
-      .catch((error) => console.error("Error fetching sites:", error));
-  }, []);
+    axios.get("/evacuationSites")
+        .then((response) => {
+            console.log("Evacuation sites fetched:", response.data);
+            setSites(response.data.evacuationSites || []); // ✅ Extract array from object
+        })
+        .catch((error) => {
+            console.error("Error fetching sites:", error);
+            setSites([]); // Ensure sites is always an array
+        });
+}, []);
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this site?")) {
@@ -42,13 +49,36 @@ const EvacuationSiteList = () => {
   };
 
   const handleAddSite = (newSite) => {
-    axios.post("/api/evacuation-sites", newSite)
-      .then((response) => {
-        setSites([...sites, response.data]);
-        setOpenModal(false);
-      })
-      .catch((error) => console.error("Error adding site:", error));
+    axios.post("/evacuationSites", newSite)
+        .then((response) => {
+            setSites((prevSites) => [...prevSites, response.data]); 
+            setOpenModal(false);
+        })
+        .catch((error) => {
+            if (error.response && error.response.status === 422) {
+                console.error("Validation Error:", error.response.data.errors);
+                alert("Validation error: " + JSON.stringify(error.response.data.errors));
+            } else {
+                console.error("Error adding site:", error);
+            }
+        });
   };
+
+  const handleEditSite = (id, updatedSite) => {
+    axios.put(`/evacuationSites/${id}`, updatedSite)
+        .then((response) => {
+            setSites((prevSites) => prevSites.map((site) => (site.id === id ? response.data : site)));
+            setSelectedSite(null);
+        })
+        .catch((error) => {
+            if (error.response && error.response.status === 422) {
+                console.error("Validation Error:", error.response.data.errors);
+                alert("Validation error: " + JSON.stringify(error.response.data.errors));
+            } else {
+                console.error("Error updating site:", error);
+            }
+        });
+  }
 
   return (
     <AuthenticatedLayout header="Evacuation Sites">
@@ -79,13 +109,13 @@ const EvacuationSiteList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sites.filter((site) => site.siteName.toLowerCase().includes(search.toLowerCase()))
-              .map((site) => (
+            {sites && sites.length > 0 ? (
+              sites.filter((site) => site.site_name?.toLowerCase().includes(search.toLowerCase())).map((site) => (
                 <TableRow key={site.id}>
-                  <TableCell>{site.siteName}</TableCell>
-                  <TableCell>{site.location}</TableCell>
-                  <TableCell>{site.capacity}</TableCell>
-                  <TableCell>{site.status}</TableCell>
+                  <TableCell>{site.site_name || "N/A"}</TableCell>
+                  <TableCell>{site.location || "N/A"}</TableCell>
+                  <TableCell>{site.capacity || "N/A"}</TableCell>
+                  <TableCell>{site.status || "N/A"}</TableCell>
                   <TableCell>
                     <IconButton>
                       <EditIcon color="primary" />
@@ -95,7 +125,12 @@ const EvacuationSiteList = () => {
                     </IconButton>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center">No evacuation sites available</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
