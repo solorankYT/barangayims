@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\EvacuationSite;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
+use App\Models\EvacuationSite;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -148,7 +148,8 @@ class DatabaseSeeder extends Seeder
                 'contact_person' => 'Captain Juan Dela Cruz',
                 'contact_number' => '09123456789',
                 'latitude' => 14.6505, 
-                'longitude' => 121.0349, 
+                'longitude' => 121.0349,
+                'link' => 'https://queen.jollibee.com.ph/2023/05/2-pc.-Chickenjoy-VM-Promo-min-819x1024.jpg',
             ],
             [
                 'site_name' => 'Public School Gymnasium',
@@ -160,6 +161,7 @@ class DatabaseSeeder extends Seeder
                 'contact_number' => '09987654321',
                 'latitude' => 14.5995,
                 'longitude' => 120.9842,
+                'link' => 'https://queen.jollibee.com.ph/2023/05/2-pc.-Chickenjoy-VM-Promo-min-819x1024.jpg',
             ],
             [
                 'site_name' => 'Barangay Covered Court',
@@ -171,6 +173,7 @@ class DatabaseSeeder extends Seeder
                 'contact_number' => '09231234567',
                 'latitude' => 14.7573,
                 'longitude' => 120.9561,
+                'link' => 'https://queen.jollibee.com.ph/2023/05/2-pc.-Chickenjoy-VM-Promo-min-819x1024.jpg',
             ]
         ];
 

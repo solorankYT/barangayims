@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('contact_number', 15);
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
+            $table->string('link')->nullable();
             $table->timestamps();
         });
     }
