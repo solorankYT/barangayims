@@ -1,22 +1,37 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  TextField,
+  Box,
   Button,
-  Grid,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  IconButton,
   Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Paper,
-  Checkbox,
+  InputAdornment,
   FormGroup,
   FormControlLabel,
+  Checkbox,
+  MenuItem,
+  Select
 } from "@mui/material";
+import { Add, Edit, Delete, Search } from "@mui/icons-material";
+import axios from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import axios from "axios";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
-// Fix missing Leaflet marker icons issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -24,17 +39,54 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const center = [14.5995, 120.9842]; // Default: Manila
-
-const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
+const EvacuationSiteManagement = () => {
+  const [sites, setSites] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedSite, setSelectedSite] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("/evacuationSites")
+      .then((response) => setSites(response.data.evacuationSites || []))
+      .catch((error) => console.error("Error fetching sites:", error));
+  }, []);
+
+  const handleOpen = (site = null) => {
+    setIsEditing(!!site);
+    setSelectedSite(site);
+    setOpen(true);
+  };
+
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedSite(null);
+    formik.resetForm();
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this site?")) {
+      axios.delete(`/evacuationSites/${id}`).then(() => {
+        setSites((prevSites) => prevSites.filter((site) => site.id !== id));
+      });
+    }
+  };
 
   const formik = useFormik({
     initialValues: {
-      id: initialValues.id || "",
-      contact_person: initialValues.contact_person || "",
-      contact_number: initialValues.contact_number || "",
-      resources: initialValues.resources || {
+      site_name: selectedSite?.site_name || "",
+      location: selectedSite?.location || "",
+      latitude: selectedSite?.latitude || "",
+      longitude: selectedSite?.longitude || "",
+      capacity: selectedSite?.capacity || "",
+      status: selectedSite?.status || "Active",
+      contact_person: selectedSite?.contact_person || "",
+      contact_number: selectedSite?.contact_number || "",
+      link: selectedSite?.link || "",
+      resources: selectedSite?.resources || {
         food: false,
         water: false,
         medical: false,
@@ -43,165 +95,225 @@ const EvacuationSiteManagement = ({ onSubmit, initialValues = {} }) => {
         restrooms: false,
         shelter: false,
       },
-      status: initialValues.status || "Active",
-      capacity: initialValues.capacity || "",
     },
+    enableReinitialize: true,
     validationSchema: Yup.object({
+      site_name: Yup.string().required("Site Name is required"),
+      location: Yup.string().required("Location is required"),
       capacity: Yup.number().required("Capacity is required"),
-      status: Yup.string().required("Status is required"),
       contact_person: Yup.string().required("Contact Person is required"),
       contact_number: Yup.string().required("Contact Number is required"),
+      link: Yup.string().required("Link is required"),
     }),
     onSubmit: (values) => {
-      onSubmit(values);
+      if (isEditing) {
+        axios.put(`/evacuationSites/${selectedSite.id}`, values).then((response) => {
+          setSites((prevSites) =>
+            prevSites.map((site) => (site.id === selectedSite.id ? response.data : site))
+          );
+          handleClose();
+        });
+      } else {
+        axios.post("/evacuationSites", values).then((response) => {
+          setSites((prevSites) => [...prevSites, response.data]);
+          handleClose();
+        });
+      }
     },
   });
 
-  // Function to handle location search
-  const handleSearch = async (query) => {
+  const handleSearchLocation = async (query) => {
     if (!query) return;
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${query}`
+        `https://nominatim.openstreetmap.org/search`,
+        {
+          params: {
+            format: "json",
+            q: query,
+            countrycodes: "PH", // Limits results to the Philippines
+            viewbox: "116.0,21.0,127.0,4.5", // Philippines bounding box (left, top, right, bottom)
+            bounded: 1, // Restrict search inside the bounding box
+          },
+        }
       );
       setSearchResults(response.data);
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
   };
+  
+  // Component for clicking on map to update latitude and longitude
+  const MapClickHandler = () => {
+    useMapEvents({
+      click(e) {
+        formik.setFieldValue("latitude", e.latlng.lat);
+        formik.setFieldValue("longitude", e.latlng.lng);
+      },
+    });
+    return null;
+  };
 
   return (
-    <Paper elevation={3} style={{ padding: "20px", maxWidth: "700px", margin: "auto" }}>
-      <Typography variant="h5" gutterBottom>
-        {initialValues.site_name ? "Edit Evacuation Site" : "Add Evacuation Site"}
-      </Typography>
-      <form onSubmit={formik.handleSubmit}>
-        <Grid container spacing={2}>
-          {/* Site Name */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Site Name"
-              name="site_name"
-              value={formik.values.site_name}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.site_name && Boolean(formik.errors.site_name)}
-              helperText={formik.touched.site_name && formik.errors.site_name}
-            />
-          </Grid>
+    <AuthenticatedLayout header="Evacuation Site Management">
+      <Box sx={{ width: "100%", padding: 3 }}>
+        {/* Search Bar */}
+        <TextField
+          variant="outlined"
+          placeholder="Search by Site Name or Location"
+          fullWidth
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ mb: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+        />
 
-          {/* Location Search Bar */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Search Location"
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </Grid>
+        {/* Add Site Button */}
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          onClick={() => handleOpen()}
+          sx={{ mb: 2 }}
+        >
+          Add Evacuation Site
+        </Button>
 
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <Grid item xs={12}>
-              {searchResults.map((place, index) => (
-                <Button
-                  key={index}
-                  fullWidth
-                  variant="outlined"
-                  style={{ marginBottom: "5px" }}
-                  onClick={() => {
-                    formik.setFieldValue("location", place.display_name);
-                    formik.setFieldValue("latitude", parseFloat(place.lat));
-                    formik.setFieldValue("longitude", parseFloat(place.lon));
-                    setSearchResults([]); // Clear results after selection
-                  }}
-                >
-                  {place.display_name}
-                </Button>
+        {/* Table of Evacuation Sites */}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>Site Name</b></TableCell>
+                <TableCell><b>Location</b></TableCell>
+                <TableCell><b>Capacity</b></TableCell>
+                <TableCell><b>Status</b></TableCell>
+                <TableCell><b>Actions</b></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sites.map((site) => (
+                <TableRow key={site.id}>
+                  <TableCell>{site.site_name}</TableCell>
+                  <TableCell>{site.location}</TableCell>
+                  <TableCell>{site.capacity}</TableCell>
+                  <TableCell>{site.status}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleOpen(site)} color="primary">
+                      <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(site.id)} color="error">
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
               ))}
-            </Grid>
-          )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-          {/* Map with Marker */}
-          <Grid item xs={12}>
-            <MapContainer center={center} zoom={12} style={{ height: "300px", width: "100%" }}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              {formik.values.latitude && formik.values.longitude && (
-                <Marker position={[formik.values.latitude, formik.values.longitude]} />
-              )}
-            </MapContainer>
-          </Grid>
-
-          {/* Capacity */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Capacity"
-              name="capacity"
-              type="number"
-              value={formik.values.capacity}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.capacity && Boolean(formik.errors.capacity)}
-              helperText={formik.touched.capacity && formik.errors.capacity}
+        {/* Dialog for Adding/Editing Evacuation Site */}
+        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+          <DialogTitle>{isEditing ? "Edit Evacuation Site" : "Add Evacuation Site"}</DialogTitle>
+          <DialogContent>
+            <TextField 
+              label="Site Name"  
+              fullWidth 
+              margin="dense" 
+              disabled={isEditing} 
+              {...formik.getFieldProps("site_name")} 
             />
-          </Grid>
 
-          {/* Resources */}
-          <Grid item xs={12}>
+            <TextField 
+            label="Location"
+            disabled={isEditing}
+            fullWidth 
+            margin="dense" 
+            {...formik.getFieldProps("location")} 
+            />
+            <TextField label="Capacity" type="number" fullWidth margin="dense" {...formik.getFieldProps("capacity")} />
+            <TextField label="Contact Person" fullWidth margin="dense" {...formik.getFieldProps("contact_person")} />
+            <TextField label="Contact Number" fullWidth margin="dense" {...formik.getFieldProps("contact_number")} />
+            
             <Typography variant="subtitle1">Available Resources</Typography>
             <FormGroup row>
-              {["food", "water", "medical", "electricity", "internet", "restrooms", "shelter"].map(
-                (resource) => (
-                  <FormControlLabel
-                    key={resource}
-                    control={
-                      <Checkbox
-                        name={`resources.${resource}`}
-                        checked={formik.values.resources[resource]}
-                        onChange={(e) =>
-                          formik.setFieldValue(`resources.${resource}`, e.target.checked)
-                        }
-                      />
-                    }
-                    label={resource.charAt(0).toUpperCase() + resource.slice(1)}
-                  />
-                )
-              )}
+              {["food", "water", "medical", "electricity", "internet", "restrooms", "shelter"].map((resource) => (
+                <FormControlLabel
+                  key={resource}
+                  control={
+                    <Checkbox
+                      checked={formik.values.resources[resource]}
+                      onChange={(e) =>
+                        formik.setFieldValue(`resources.${resource}`, e.target.checked)
+                      }
+                    />
+                  }
+                  label={resource.charAt(0).toUpperCase() + resource.slice(1)}
+                />
+              ))}
+
+              <TextField
+                select
+                label="Status"
+                fullWidth
+                margin="dense"
+                name="status"
+                value={formik.values.status} // Bind value to Formik state
+                onChange={formik.handleChange} // Update state when selected
+                error={formik.touched.status && Boolean(formik.errors.status)}
+                helperText={formik.touched.status && formik.errors.status}
+              >
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Full">Full</MenuItem>
+                <MenuItem value="Under Repair">Under Repair</MenuItem>
+              </TextField>
+
+              <TextField label="Image link" fullWidth margin="dense" {...formik.getFieldProps("link")} />
+           
+          
             </FormGroup>
-          </Grid>
 
-          {/* Contact Person */}
-          <Grid item xs={6}>
+
             <TextField
+              label="Search Location"
               fullWidth
-              label="Contact Person"
-              name="contact_person"
-              value={formik.values.contact_person}
-              onChange={formik.handleChange}
+              margin="dense"
+              onChange={(e) => handleSearchLocation(e.target.value)}
             />
-          </Grid>
+            {searchResults.map((place, index) => (
+              <Button key={index} fullWidth variant="outlined" onClick={() => {
+                formik.setFieldValue("location", place.display_name);
+                formik.setFieldValue("latitude", parseFloat(place.lat));
+                formik.setFieldValue("longitude", parseFloat(place.lon));
+                setSearchResults([]);
+              }}>
+                {place.display_name}
+              </Button>
+            ))}
 
-          {/* Contact Number */}
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Contact Number"
-              name="contact_number"
-              value={formik.values.contact_number}
-              onChange={formik.handleChange}
-            />
-          </Grid>
 
-          {/* Submit Button */}
-          <Grid item xs={12} style={{ textAlign: "center" }}>
-            <Button type="submit" variant="contained" color="primary">
-              {initialValues.site_name ? "Update Site" : "Add Site"}
+            {/* Map for Selecting Location */}
+            <MapContainer center={[formik.values.latitude, formik.values.longitude]} zoom={12} style={{ height: "300px", width: "100%", marginTop: "10px" }}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={[formik.values.latitude, formik.values.longitude]} />
+              <MapClickHandler />
+            </MapContainer>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="secondary">Cancel</Button>
+            <Button onClick={formik.handleSubmit} color="primary">
+              {isEditing ? "Update" : "Save"}
             </Button>
-          </Grid>
-        </Grid>
-      </form>
-    </Paper>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </AuthenticatedLayout>
   );
 };
 

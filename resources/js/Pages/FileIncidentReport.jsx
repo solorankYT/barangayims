@@ -38,6 +38,7 @@ const FileIncidentReport = ({ open, handleClose }) => {
         <TextField name="incident_type" label="Incident Type" fullWidth margin="dense" onChange={handleChange} />
         <TextField name="description" label="Description" fullWidth margin="dense" multiline rows={3} onChange={handleChange} />
         <TextField name="status" label="Status" fullWidth margin="dense" disabled value={incidentData.status} />
+        
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="secondary">Cancel</Button>

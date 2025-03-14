@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardMedia,
@@ -8,30 +8,31 @@ import {
   Modal,
   Box,
   Button,
+  CircularProgress,
+  Alert
 } from "@mui/material";
-
-const evacuationSites = [
-  {
-    id: 1,
-    name: "Evacuation Center A",
-    location: "Barangay 137, Manila",
-    capacity: "500 people",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRyTvLH8qu8wiJiCu_qum1PiAGwJiWxSynWhQ&s",
-    description: "This center has food, water, and first-aid facilities.",
-  },
-  {
-    id: 2,
-    name: "Evacuation Center B",
-    location: "Barangay 220, Quezon City",
-    capacity: "800 people",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4xJPGXEe2epBFpDNK-mG9E8OqD94Xd_snOQ&s",
-    description: "Equipped with medical assistance and emergency supplies.",
-  },
-];
+import axios from "axios";
 
 const EvacuationGallery = () => {
+  const [evacuationSites, setEvacuationSites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
+
+  // Fetch evacuation site data from the database
+  useEffect(() => {
+    axios.get("/evacuationSites")
+      .then((response) => {
+        setEvacuationSites(response.data.evacuationSites || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching evacuation sites:", err);
+        setError("Failed to load evacuation sites.");
+        setLoading(false);
+      });
+  }, []);
 
   const handleOpen = (site) => {
     setSelectedSite(site);
@@ -48,27 +49,58 @@ const EvacuationGallery = () => {
       <Typography variant="h4" gutterBottom>
         Evacuation Centers
       </Typography>
-      <Grid container spacing={3}>
-        {evacuationSites.map((site) => (
-          <Grid item xs={12} sm={6} md={4} key={site.id}>
-            <Card sx={{ cursor: "pointer" }} onClick={() => handleOpen(site)}>
-              <CardMedia
-                component="img"
-                height="200"
-                image={site.image}
-                alt={site.name}
-              />
-              <CardContent>
-                <Typography variant="h6">{site.name}</Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {site.location}
-                </Typography>
-                <Typography variant="body2">Capacity: {site.capacity}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+
+      {loading ? (
+        <CircularProgress />
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : (
+        <Grid container spacing={3}>
+          {evacuationSites.length > 0 ? (
+            evacuationSites.map((site) => (
+              <Grid item xs={12} sm={6} md={4} key={site.id}>
+            <Card 
+                sx={{ 
+                  cursor: "pointer", 
+                  maxWidth: 300, 
+                  borderRadius: "10px", 
+                  boxShadow: 3, 
+                  "&:hover": { boxShadow: 6 } 
+                }} 
+                onClick={() => handleOpen(site)}
+              >
+                <CardMedia
+                  component="img"
+                  image={site.link || "/default-evacuation.jpg"}
+                  alt={site.site_name}
+                  sx={{
+                    width: "100%",
+                    height: "250px", 
+                    objectFit: "fill"
+                  }}
+                />
+                <CardContent>
+                  <Typography variant="h6" fontWeight="bold">
+                    {site.site_name}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {site.location}
+                  </Typography>
+                  <Typography variant="body2" fontWeight="500">
+                    Capacity: {site.capacity}
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              </Grid>
+            ))
+          ) : (
+            <Typography variant="body1" color="textSecondary">
+              No evacuation centers available.
+            </Typography>
+          )}
+        </Grid>
+      )}
 
       {/* Modal for Additional Details */}
       <Modal open={open} onClose={handleClose}>
@@ -88,7 +120,7 @@ const EvacuationGallery = () => {
           {selectedSite && (
             <>
               <Typography variant="h5" gutterBottom>
-                {selectedSite.name}
+                {selectedSite.site_name}
               </Typography>
               <Typography variant="body1">{selectedSite.description}</Typography>
               <Typography variant="body2" sx={{ mt: 2, color: "textSecondary" }}>

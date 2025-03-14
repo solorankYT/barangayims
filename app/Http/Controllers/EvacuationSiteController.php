@@ -61,6 +61,7 @@ class EvacuationSiteController extends Controller
             'contact_person' => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|max:15',
             'resources' => 'nullable|string',
+            'link' => 'nullable|url',
         ]);
 
         $evacuationSite->update($validatedData);

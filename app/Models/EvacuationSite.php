@@ -18,6 +18,7 @@ class EvacuationSite extends Model
         'contact_number',
         'latitude',
         'longitude',
+        'link',
     ];
 
     protected $casts = [

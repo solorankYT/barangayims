@@ -43,13 +43,11 @@ Route::get('/evacuationsitemanagement', function () {
     return Inertia::render('EvacuationSiteManagement');
 })->name('evacuationsitemanagement');
 
-Route::get('/evacucationsitelist', function () {
-    return Inertia::render('EvacuationSiteList');
-})->name('evacucationsitelist');
-
 Route::middleware(['auth'])->group(function () {
-    Route::get('/evacuationSites', [EvacuationSiteController::class, 'index']);
+    Route::get('/evacuationSites', [EvacuationSiteController::class, 'index']) ;
     Route::post('/evacuationSites', [EvacuationSiteController::class, 'store']);
+    Route::put('/evacuationSites/{id}', [EvacuationSiteController::class, 'update']);
+    Route::delete('/evacuationSites/{id}', [EvacuationSiteController::class, 'destroy']);
 });
 
 Route::middleware(['auth'])->group(function () {
