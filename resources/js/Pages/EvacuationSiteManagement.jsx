@@ -79,8 +79,8 @@ const EvacuationSiteManagement = () => {
     initialValues: {
       site_name: selectedSite?.site_name || "",
       location: selectedSite?.location || "",
-      latitude: selectedSite?.latitude || "",
-      longitude: selectedSite?.longitude || "",
+      latitude: selectedSite?.latitude || 14.5995, 
+      longitude: selectedSite?.longitude || 120.9842,
       capacity: selectedSite?.capacity || "",
       status: selectedSite?.status || "Active",
       contact_person: selectedSite?.contact_person || "",
@@ -131,9 +131,9 @@ const EvacuationSiteManagement = () => {
           params: {
             format: "json",
             q: query,
-            countrycodes: "PH", // Limits results to the Philippines
-            viewbox: "116.0,21.0,127.0,4.5", // Philippines bounding box (left, top, right, bottom)
-            bounded: 1, // Restrict search inside the bounding box
+            countrycodes: "PH",
+            viewbox: "116.0,21.0,127.0,4.5",
+            bounded: 1, 
           },
         }
       );
@@ -143,7 +143,6 @@ const EvacuationSiteManagement = () => {
     }
   };
   
-  // Component for clicking on map to update latitude and longitude
   const MapClickHandler = () => {
     useMapEvents({
       click(e) {
@@ -157,24 +156,7 @@ const EvacuationSiteManagement = () => {
   return (
     <AuthenticatedLayout header="Evacuation Site Management">
       <Box sx={{ width: "100%", padding: 3 }}>
-        {/* Search Bar */}
-        <TextField
-          variant="outlined"
-          placeholder="Search by Site Name or Location"
-          fullWidth
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ mb: 2 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* Add Site Button */}
+    
         <Button
           variant="contained"
           color="primary"
@@ -185,7 +167,6 @@ const EvacuationSiteManagement = () => {
           Add Evacuation Site
         </Button>
 
-        {/* Table of Evacuation Sites */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -218,7 +199,6 @@ const EvacuationSiteManagement = () => {
           </Table>
         </TableContainer>
 
-        {/* Dialog for Adding/Editing Evacuation Site */}
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
           <DialogTitle>{isEditing ? "Edit Evacuation Site" : "Add Evacuation Site"}</DialogTitle>
           <DialogContent>
@@ -264,8 +244,8 @@ const EvacuationSiteManagement = () => {
                 fullWidth
                 margin="dense"
                 name="status"
-                value={formik.values.status} // Bind value to Formik state
-                onChange={formik.handleChange} // Update state when selected
+                value={formik.values.status} 
+                onChange={formik.handleChange} 
                 error={formik.touched.status && Boolean(formik.errors.status)}
                 helperText={formik.touched.status && formik.errors.status}
               >
@@ -275,8 +255,6 @@ const EvacuationSiteManagement = () => {
               </TextField>
 
               <TextField label="Image link" fullWidth margin="dense" {...formik.getFieldProps("link")} />
-           
-          
             </FormGroup>
 
 
@@ -298,7 +276,6 @@ const EvacuationSiteManagement = () => {
             ))}
 
 
-            {/* Map for Selecting Location */}
             <MapContainer center={[formik.values.latitude, formik.values.longitude]} zoom={12} style={{ height: "300px", width: "100%", marginTop: "10px" }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <Marker position={[formik.values.latitude, formik.values.longitude]} />

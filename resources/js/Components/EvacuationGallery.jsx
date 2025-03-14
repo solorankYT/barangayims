@@ -66,6 +66,7 @@ const EvacuationGallery = () => {
                   borderRadius: "10px", 
                   boxShadow: 3, 
                   "&:hover": { boxShadow: 6 } 
+                  
                 }} 
                 onClick={() => handleOpen(site)}
               >
