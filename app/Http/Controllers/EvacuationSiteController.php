@@ -19,6 +19,15 @@ class EvacuationSiteController extends Controller
         ]);
     }
 
+    public function fetchEvacuationSites()
+    {
+        $evacuationSites = EvacuationSite::all();
+
+        return response()->json([
+            'evacuationSites' => $evacuationSites,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         Log::info('Request Data: ', $request->all());
