@@ -1,0 +1,2 @@
+import{r,j as m}from"./app-BUJ-Xs52.js";import{A as a}from"./Autocomplete-BLYPNwWp.js";let o=!1;const c=()=>{o||(console.warn(["MUI: The Autocomplete component was moved from the lab to the core.","","You should use `import { Autocomplete } from '@mui/material'`","or `import Autocomplete from '@mui/material/Autocomplete'`"].join(`
+`)),o=!0)},s=r.forwardRef(function(e,t){return c(),m.jsx(a,{ref:t,...e})});export{s as A};
