@@ -18,7 +18,7 @@ const EvacuationMap = () => {
     const [selectedSite, setSelectedSite] = useState(null); 
 
     useEffect(() => {
-        fetch("/evacuationSites")
+        fetch("/fetchEvacuationSites")
             .then((response) => response.json())
             .then((data) => setSites(data.evacuationSites || [])) 
             .catch((error) => console.error("Error fetching sites:", error));

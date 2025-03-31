@@ -37,6 +37,7 @@ import {
 } from "@mui/icons-material";
 import { Link, usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
+import { router } from '@inertiajs/react';
 
 const drawerWidth = 260;
 
@@ -51,8 +52,12 @@ export default function AuthenticatedLayout({ header, children }) {
     const handleMenuClose = () => setAnchorEl(null);
 
     const handleLogout = () => {
-        Inertia.post(route("logout"));
-        handleMenuClose();
+        router.post(route('logout'), {}, {
+            preserveState: false,  // Ensures a clean session reset
+            onSuccess: () => {
+                router.visit(route('login')); // ✅ Redirects to login after logout
+            }
+        });
     };
 
     const navItems = [
@@ -65,7 +70,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const userManagementItems = [
         { label: "Residents Management", icon: <Person />, route: "residentmanagement" },
         { label: "Roles Management", icon: <AdminPanelSettings />, route: "roles" },
-        { label: "Weather Management", icon: <Cloud />, route: "dashboard" },
+        { label: "Weather Management", icon: <Cloud />, route: "WeatherManagement" },
         { label: "Evacuation Site Management", icon: <Map />, route: "evacuationsitemanagement" },
     ];
 
@@ -133,6 +138,10 @@ export default function AuthenticatedLayout({ header, children }) {
                             bgcolor: "#ffffff",
                             boxSizing: "border-box",
                             borderRight: "1px solid #ddd",
+                            overflowX: "hidden", 
+                            overflowY: "auto", 
+                            scrollbarWidth: "none",
+                            "&::-webkit-scrollbar": { display: "none" },
                         },
                     }}
                 >
@@ -145,11 +154,15 @@ export default function AuthenticatedLayout({ header, children }) {
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: 3,
+                    p: 2,
                     mt: 8,
                     bgcolor: "#fff",
                     color: "#000",
                     transition: "margin-left 0.3s ease",
+                    overflowX: "hidden", 
+                    overflowY: "auto", 
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": { display: "none" },
                 }}
             >
                 {children}

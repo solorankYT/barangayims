@@ -22,7 +22,7 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+})->name('welcome');
 
 
 Route::middleware(['auth'])->group(function () {
@@ -51,6 +51,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/evacuationSites/{id}', [EvacuationSiteController::class, 'update']);
     Route::delete('/evacuationSites/{id}', [EvacuationSiteController::class, 'destroy']);
 });
+
+Route::get('/fetchEvacuationSites', [EvacuationSiteController::class, 'fetchEvacuationSites']);
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/document-requests', [DocumentRequestController::class, 'index']) ->name('admindocuments');
@@ -95,8 +97,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/currentWeather', [WeatherDataController::class, 'fetchAndStoreWeatherData']);
-Route::get('/weatherData', [WeatherDataController::class, 'index']);
+Route::get('/fetchAndStoreWeatherData', [WeatherDataController::class, 'fetchAndStoreWeatherData']);
+Route::get('/fetchCurrentWeather', [WeatherDataController::class, 'fetchCurrentWeather']);
+Route::get('/fetchWeatherData', [WeatherDataController::class, 'fetchWeatherData']);
 
+Route::middleware('auth')->group(function () {
+    Route::get('/weatherManagement', function () {
+        return Inertia::render('WeatherManagement');
+    })->name('WeatherManagement');
+
+    Route::post('/weatherData', [WeatherDataController::class, 'store']);
+    Route::put('/weatherData/{id}', [WeatherDataController::class, 'update']);
+    Route::delete('/weatherData/{id}', [WeatherDataController::class, 'destroy']);
+});
 
 require __DIR__.'/auth.php';

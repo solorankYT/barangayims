@@ -2,10 +2,37 @@ import { usePage, Head } from "@inertiajs/react";
 import { Grid, Card, CardContent, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import { People, Place, Warning, Cloud } from '@mui/icons-material';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
 export default function Dashboard() {
     // ✅ Ensure props have default values to avoid errors
-    const { weather, residents = [], evacuationSites = [], incidents = [] } = usePage().props;
+    const { residents = [], evacuationSites = [], incidents = [] } = usePage().props;
+    const [weatherHistory, setWeatherHistory] = useState([]);
+    const [currentWeather, setCurrentWeather] = useState(null);
+
+    useEffect(() => {
+        fetchWeatherHistory();
+    }, []);
+
+    const fetchWeatherHistory = async () => {
+        try {
+          const response = await axios.get("/fetchWeatherData");
+          if (response.data) {
+            const dataArray = Array.isArray(response.data) ? response.data : [response.data];
+            setWeatherHistory(dataArray);
+            
+            // Set the latest weather data as the current weather
+            if (dataArray.length > 0) {
+              setCurrentWeather(dataArray[0]);
+            }
+          } else {
+            console.error("Unexpected response format:", response.data);
+          }
+        } catch (error) {
+          console.error("Error fetching weather history:", error);
+        }
+      };
 
     return (
         <AuthenticatedLayout>
@@ -68,43 +95,36 @@ export default function Dashboard() {
             {/* Main Dashboard Layout */}
             <Grid container spacing={3}>
                 {/* Weather Widget */}
-                <Grid item xs={12} md={4}>
-                    <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
+                        <Grid item xs={12} md={4}>
+                        {currentWeather && (
+                            <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
                                 <Cloud sx={{ verticalAlign: 'middle', mr: 1 }} />
                                 Weather Update
-                            </Typography>
-                            {weather ? (
-                                <>
-                                    <Typography variant="subtitle1">{weather.city}, {weather.country}</Typography>
-                                    <Typography variant="body2" color="textSecondary">{weather.region}</Typography>
-                                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 10 }}>
-                                        <img src={weather.weather_icon} alt={weather.weather_description} width="50" />
-                                        <div style={{ marginLeft: 10 }}>
-                                            <Typography variant="h4">{weather.temperature}°C</Typography>
-                                            <Typography>{weather.weather_description}</Typography>
-                                        </div>
-                                    </div>
-                                    <Typography variant="caption" color="textSecondary">Updated: {new Date(weather.updated_at).toLocaleString()}</Typography>
-                                </>
-                            ) : (
-                                <Typography color="textSecondary">Weather data unavailable</Typography>
-                            )}
-                        </CardContent>
-
-                        <Button fullWidth variant="contained" color="primary" sx={{ borderRadius: 0 }}>
-                            Send to Residents
-                        </Button>
-                    </Card>
-                </Grid>
+                                </Typography>
+                                <Typography variant="subtitle1">{currentWeather.city}, {currentWeather.country}</Typography>
+                                <Typography variant="body2" color="textSecondary">{currentWeather.region}</Typography>
+                                <div style={{ display: 'flex', alignItems: 'center', marginTop: 10 }}>
+                                <img src={currentWeather.weather_icon} alt={currentWeather.weather_description} width="50" />
+                                <div style={{ marginLeft: 10 }}>
+                                    <Typography variant="h4">{currentWeather.temperature}°C</Typography>
+                                    <Typography>{currentWeather.weather_description}</Typography>
+                                </div>
+                                </div>
+                                <Typography variant="caption" color="textSecondary">Updated: {new Date(currentWeather.created_at).toLocaleString()}</Typography>
+                            </CardContent>
+                            </Card>
+                        )}
+                        </Grid>
+                
 
                 {/* Residents Table */}
                 <Grid item xs={12} md={4}>
                     <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
                         <CardContent>
                             <Typography variant="h6">Residents</Typography>
-                            <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                            <TableContainer component={Paper} sx={{ minHeight: 30 }}>
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>
@@ -137,7 +157,7 @@ export default function Dashboard() {
                     <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
                         <CardContent>
                             <Typography variant="h6">Evacuation Sites</Typography>
-                            <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                            <TableContainer component={Paper} sx={{ minHeight: 300 }}>
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>

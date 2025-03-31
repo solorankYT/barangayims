@@ -22,7 +22,7 @@ const EvacuationGallery = () => {
 
   // Fetch evacuation site data from the database
   useEffect(() => {
-    axios.get("/evacuationSites")
+    axios.get("/fetchEvacuationSites")
       .then((response) => {
         setEvacuationSites(response.data.evacuationSites || []);
         setLoading(false);
