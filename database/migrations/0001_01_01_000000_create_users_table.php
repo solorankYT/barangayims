@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('address');
             $table->string('city');
             $table->string('zip_code');
-            $table->string('household_number');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
