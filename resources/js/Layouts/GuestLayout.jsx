@@ -116,11 +116,9 @@ export default function GuestLayout({ children }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* Navbar */}
       <StyledAppBar position="static">
         <Container maxWidth="xl">
           <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            {/* Left Side: Logo & Mobile Menu */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {isMobile && (
                 <IconButton
@@ -149,7 +147,7 @@ export default function GuestLayout({ children }) {
                     display: { xs: 'none', sm: 'block' }
                   }}
                 >
-                  Barangay 137
+                  Barangay XYZ
                 </Typography>
               </Link>
             </Box>
@@ -176,21 +174,9 @@ export default function GuestLayout({ children }) {
               </Box>
             )}
 
-            {/* Right Side: Auth/User Controls */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {auth.user ? (
                 <>
-                  <IconButton
-                    size="large"
-                    aria-label="show notifications"
-                    color="inherit"
-                    onClick={handleNotificationsMenuOpen}
-                  >
-                    <Badge badgeContent={notifications.length} color="error">
-                      <NotificationsIcon />
-                    </Badge>
-                  </IconButton>
-                  
                   <Menu
                     anchorEl={notificationsEl}
                     open={Boolean(notificationsEl)}
@@ -266,16 +252,6 @@ export default function GuestLayout({ children }) {
                     <Divider />
                     <MenuItem 
                       component={Link} 
-                      href={route('dashboard')} 
-                      onClick={handleMenuClose}
-                    >
-                      <ListItemIcon>
-                        <DashboardIcon fontSize="small" />
-                      </ListItemIcon>
-                      Dashboard
-                    </MenuItem>
-                    <MenuItem 
-                      component={Link} 
                       href={route('requeststatus')} 
                       onClick={handleMenuClose}
                     >
@@ -344,7 +320,7 @@ export default function GuestLayout({ children }) {
             alt="Barangay Logo"
             style={{ width: 40, height: 40, marginRight: 10 }}
           />
-          <Typography variant="h6">Barangay 137</Typography>
+          <Typography variant="h6">Barangay XYZ</Typography>
         </Box>
         <Divider />
         

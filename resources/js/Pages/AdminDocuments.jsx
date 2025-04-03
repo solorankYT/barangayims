@@ -145,9 +145,6 @@ const AdminDocuments = () => {
                       <IconButton onClick={() => handleOpen(doc)} color="primary">
                         <Edit />
                       </IconButton>
-                      <IconButton onClick={() => handleDelete(doc.documentRequestID)} color="error">
-                        <Delete />
-                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))

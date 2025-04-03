@@ -189,9 +189,6 @@ const EvacuationSiteManagement = () => {
                     <IconButton onClick={() => handleOpen(site)} color="primary">
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(site.id)} color="error">
-                      <Delete />
-                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}

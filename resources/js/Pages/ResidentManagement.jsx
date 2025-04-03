@@ -200,9 +200,6 @@ const ResidentManagement = () => {
                       <IconButton onClick={() => handleOpen(resident)} color="primary">
                         <Edit />
                       </IconButton>
-                      <IconButton onClick={() => handleDelete(resident.id)} color="error">
-                        <Delete />
-                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))

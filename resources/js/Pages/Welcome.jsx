@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -14,7 +14,7 @@ import {
   Divider,
   Chip,
   Paper,
-  useTheme
+  useTheme,
 } from "@mui/material";
 import { 
   Report, 
@@ -24,7 +24,8 @@ import {
   Phone,
   LocationOn,
   Send,
-  ArrowDownward
+  ArrowDownward,
+  Cloud
 } from "@mui/icons-material";
 import GuestLayout from "@/Layouts/GuestLayout";
 import FileIncidentReport from "./FileIncidentReport";
@@ -33,17 +34,37 @@ import CertificateApplication from "./CertificateApplication";
 import { Inertia } from "@inertiajs/inertia";
 import EvacuationGallery from "@/Components/EvacuationGallery";
 import EvacuationMap from "@/Components/EvacuationMap";
+import axios from "axios";
 
 const Welcome = ({ auth }) => {
   const [openIncident, setOpenIncident] = useState(false);
   const [openDocument, setOpenDocument] = useState(false);
   const [openCertificate, setOpenCertificate] = useState(false);
+  const [weatherHistory, setWeatherHistory] = useState([]);
+  const [currentWeather, setCurrentWeather] = useState(null);
   const [snackbar, setSnackbar] = useState({ 
     open: false, 
     message: "", 
     severity: "info" 
   });
   const theme = useTheme();
+
+  useEffect(() => {
+    fetchWeatherHistory();
+  }, []);
+
+  const fetchWeatherHistory = async () => {
+    try {
+      const response = await axios.get("/fetchWeatherData");
+      if (response.data) {
+        const dataArray = Array.isArray(response.data) ? response.data : [response.data];
+        setWeatherHistory(dataArray);
+        if (dataArray.length > 0) setCurrentWeather(dataArray[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching weather history:", error);
+    }
+  };
 
   const handleButtonClick = (setter) => {
     if (!auth.user) {
@@ -239,6 +260,304 @@ const Welcome = ({ auth }) => {
         </Grid>
       </Container>
 
+      <Paper 
+  id="weather" 
+  sx={{ 
+    py: 8,
+    background: theme.palette.grey[50],
+    borderRadius: 0,
+    borderTop: `1px solid ${theme.palette.divider}`,
+    borderBottom: `1px solid ${theme.palette.divider}`
+  }}
+>
+  <Container>
+    <Typography 
+      variant="h3" 
+      fontWeight={700} 
+      textAlign="center" 
+      gutterBottom
+      sx={{ mb: 6 }}
+    >
+      Weather Updates
+    </Typography>
+    
+    {currentWeather ? (
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={4} lg={3}>
+          <Card sx={{ 
+            borderRadius: 3,
+            boxShadow: theme.shadows[2],
+            height: '100%',
+            background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
+            color: 'white',
+            transition: 'transform 0.3s, box-shadow 0.3s',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+              boxShadow: theme.shadows[6]
+            }
+          }}>
+            <CardContent sx={{ p: 4, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box flexGrow={1}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                  <Box>
+                    <Typography variant="h5" fontWeight={600} gutterBottom>
+                      {currentWeather.city}
+                    </Typography>
+                    <Typography variant="body2">
+                      {currentWeather.region}, {currentWeather.country}
+                    </Typography>
+                  </Box>
+                  <Cloud sx={{ 
+                    fontSize: 48, 
+                    color: 'rgba(255,255,255,0.2)',
+                    ml: 2 
+                  }} />
+                </Box>
+
+                <Divider sx={{ 
+                  my: 2, 
+                  borderColor: 'rgba(255,255,255,0.2)' 
+                }} />
+
+                <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" textAlign="center">
+                  <Box mb={2}>
+                    <img 
+                      src={currentWeather.weather_icon} 
+                      alt={currentWeather.weather_description} 
+                      width="80" 
+                    />
+                  </Box>
+                  <Typography variant="h2" fontWeight={700}>
+                    {currentWeather.temperature}°C
+                  </Typography>
+                  <Typography variant="h6" textTransform="capitalize">
+                    {currentWeather.weather_description}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box mt={3}>
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                  Updated: {new Date(currentWeather.created_at).toLocaleTimeString()}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        {/* Weather Tips Section - 70% width */}
+        <Grid item xs={12} md={8} lg={9}>
+          <Card sx={{ 
+            height: '100%',
+            borderRadius: 3,
+            boxShadow: theme.shadows[2],
+            background: theme.palette.background.paper,
+            transition: 'transform 0.3s, box-shadow 0.3s',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+              boxShadow: theme.shadows[6]
+            }
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              <Grid container spacing={4}>
+                {/* Advisory Section - Top Half */}
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h5" fontWeight={600} gutterBottom>
+                    Current Advisory
+                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    mb: 3,
+                    p: 3,
+                    borderRadius: 2,
+                    background: theme.palette.warning.light,
+                    height: '100%'
+                  }}>
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '50%', 
+                      backgroundColor: theme.palette.warning.main,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 2,
+                      color: 'white',
+                      flexShrink: 0
+                    }}>
+                      <Typography variant="h6">!</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={500} gutterBottom>
+                        {currentWeather.temperature > 30 
+                          ? "Heat Warning"
+                          : currentWeather.weather_description.includes('rain') 
+                            ? "Rain Advisory"
+                            : "Weather Update"}
+                      </Typography>
+                      <Typography variant="body1">
+                        {currentWeather.temperature > 30 
+                          ? "Heat index reaching dangerous levels. Stay hydrated and avoid prolonged sun exposure."
+                          : currentWeather.weather_description.includes('rain') 
+                            ? "Rain expected in the area. Carry umbrellas and be cautious of slippery surfaces."
+                            : "Normal weather conditions expected. No special precautions needed at this time."}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Emergency Contacts - Top Half */}
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h5" fontWeight={600} gutterBottom>
+                    Emergency Contacts
+                  </Typography>
+                  <Paper sx={{ p: 3, height: '100%' }}>
+                    <Box component="ul" sx={{ pl: 2, listStyleType: 'none' }}>
+                      <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                        <Phone color="error" sx={{ mr: 2 }} />
+                        <Box>
+                          <Typography fontWeight={500}>Barangay Hotline</Typography>
+                          <Typography>0912 345 6789</Typography>
+                        </Box>
+                      </Box>
+                      <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                        <Phone color="error" sx={{ mr: 2 }} />
+                        <Box>
+                          <Typography fontWeight={500}>NDRRMC Hotline</Typography>
+                          <Typography>911-1406 / 912-2665</Typography>
+                        </Box>
+                      </Box>
+                      <Box component="li" sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Phone color="error" sx={{ mr: 2 }} />
+                        <Box>
+                          <Typography fontWeight={500}>PAGASA Hotline</Typography>
+                          <Typography>433-8526</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Paper>
+                </Grid>
+
+                {/* Tips Section - Bottom Half */}
+                <Grid item xs={12}>
+                  <Typography variant="h5" fontWeight={600} gutterBottom padding={2}>
+                    Preparedness Tips
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper sx={{ p: 2, height: '100%', textAlign: 'center' }}>
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          borderRadius: '50%', 
+                          bgcolor: theme.palette.info.light,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mx: 'auto',
+                          mb: 1
+                        }}>
+                          <Typography variant="h5" color="info.dark">1</Typography>
+                        </Box>
+                        <Typography variant="subtitle1" fontWeight={500}>Stay Informed</Typography>
+                        <Typography variant="body2">
+                          Monitor weather reports and barangay announcements regularly
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper sx={{ p: 2, height: '100%', textAlign: 'center' }}>
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          borderRadius: '50%', 
+                          bgcolor: theme.palette.success.light,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mx: 'auto',
+                          mb: 1
+                        }}>
+                          <Typography variant="h5" color="success.dark">2</Typography>
+                        </Box>
+                        <Typography variant="subtitle1" fontWeight={500}>Prepare Supplies</Typography>
+                        <Typography variant="body2">
+                          Maintain emergency kits with food, water, and first aid
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper sx={{ p: 2, height: '100%', textAlign: 'center' }}>
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          borderRadius: '50%', 
+                          bgcolor: theme.palette.warning.light,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mx: 'auto',
+                          mb: 1
+                        }}>
+                          <Typography variant="h5" color="warning.dark">3</Typography>
+                        </Box>
+                        <Typography variant="subtitle1" fontWeight={500}>Know Evacuation</Typography>
+                        <Typography variant="body2">
+                          Familiarize yourself with nearest evacuation centers
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper sx={{ p: 2, height: '100%', textAlign: 'center' }}>
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          borderRadius: '50%', 
+                          bgcolor: theme.palette.error.light,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mx: 'auto',
+                          mb: 1
+                        }}>
+                          <Typography variant="h5" color="error.dark">4</Typography>
+                        </Box>
+                        <Typography variant="subtitle1" fontWeight={500}>Emergency Plan</Typography>
+                        <Typography variant="body2">
+                          Establish family communication and meeting plans
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Button 
+                variant="contained" 
+                color="primary" 
+                fullWidth 
+                size="large"
+                sx={{ mt: 4 }}
+                onClick={() => window.open('https://www.pagasa.dost.gov.ph/', '_blank')}
+                startIcon={<Cloud />}
+              >
+                View Detailed Weather Forecast
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    ) : (
+      <Box textAlign="center" py={4}>
+        <Typography variant="body1" color="text.secondary">
+          Loading weather data...
+        </Typography>
+      </Box>
+    )}
+  </Container>
+</Paper>
+    
       <Paper 
         id="evacuation" 
         sx={{ 

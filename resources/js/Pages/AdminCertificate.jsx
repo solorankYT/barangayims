@@ -116,9 +116,6 @@ const AdminCertificateRequests = () => {
                       <IconButton onClick={() => handleOpen(cert)} color="primary">
                         <Edit />
                       </IconButton>
-                      <IconButton onClick={() => handleDelete(cert.certificateRequestID)} color="error">
-                        <Delete />
-                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))
