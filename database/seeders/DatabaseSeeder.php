@@ -69,8 +69,8 @@ class DatabaseSeeder extends Seeder
                 'email' => $userData['email'],
             ], [
                 'name' => $userData['name'],
-                'birthday' => '1990-01-01', // Sample birthday
-                'gender' => 'Male', // Default gender, adjust as needed
+                'birthday' => '1990-01-01', 
+                'gender' => 'Male',
                 'contact_number' => $userData['contact_number'],
                 'address' => '123 Barangay St.',
                 'city' => 'Sample City',
@@ -78,13 +78,9 @@ class DatabaseSeeder extends Seeder
                 'password' => $userData['password'],
             ]);
 
-            // Assign role to user
             $user->assignRole($userData['role']);
         }
     }
-
-
-
 
     /**
      * Seed document types into the database.

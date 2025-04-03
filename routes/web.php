@@ -25,7 +25,7 @@ Route::get('/', function () {
 })->name('welcome');
 
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'barangay.role'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']) ->name('dashboard');
 });
 

@@ -177,9 +177,22 @@ function SidebarContent({ navItems, userManagementItems, onClose }) {
     return (
         <Box sx={{ width: drawerWidth, height: "100vh", display: "flex", flexDirection: "column" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000" }}>
-                    Barangay IMS
-                </Typography>
+                <Link href="/" style={{ textDecoration: 'none' }}>
+                    <Typography 
+                        variant="h6" 
+                        sx={{ 
+                            fontWeight: "bold", 
+                            color: "#000",
+                            '&:hover': {
+                                cursor: 'pointer',
+                                // Optional: Add hover effect
+                                color: '#555',
+                            }
+                        }}
+                    >
+                        Barangay IMS
+                    </Typography>
+                </Link>
                 {onClose && (
                     <IconButton onClick={onClose}>
                         <MenuIcon />
