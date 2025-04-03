@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('contact_number')->unique();
             $table->string('address');
             $table->string('city');
-            $table->string('state');
             $table->string('zip_code');
             $table->string('household_number');
             $table->string('password');

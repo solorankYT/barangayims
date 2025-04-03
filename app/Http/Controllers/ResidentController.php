@@ -32,7 +32,6 @@ class ResidentController extends Controller
                 'contact_number' => 'nullable|string|max:20',
                 'address' => 'required|string|max:255',
                 'city' => 'nullable|string|max:100',
-                'state' => 'nullable|string|max:100',
                 'zip_code' => 'nullable|string|max:10',
                 'household_number' => 'nullable|string|max:50',
                 'password' => 'required|string|min:6'
@@ -46,7 +45,6 @@ class ResidentController extends Controller
                 'contact_number' => $validated['contact_number'],
                 'address' => $validated['address'],
                 'city' => $validated['city'],
-                'state' => $validated['state'],
                 'zip_code' => $validated['zip_code'],
                 'household_number' => $validated['household_number'],
                 'password' => Hash::make($validated['password']),
@@ -85,7 +83,6 @@ class ResidentController extends Controller
                 'contact_number' => 'nullable|string|max:20',
                 'address' => 'required|string|max:255',
                 'city' => 'nullable|string|max:100',
-                'state' => 'nullable|string|max:100',
                 'zip_code' => 'nullable|string|max:10',
                 'household_number' => 'nullable|string|max:50',
             ]);

@@ -74,7 +74,6 @@ class DatabaseSeeder extends Seeder
                 'contact_number' => $userData['contact_number'],
                 'address' => '123 Barangay St.',
                 'city' => 'Sample City',
-                'state' => 'Sample State',
                 'zip_code' => '12345',
                 'household_number' => 'H12345',
                 'password' => $userData['password'],
