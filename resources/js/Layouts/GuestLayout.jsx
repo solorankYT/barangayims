@@ -441,7 +441,7 @@ export default function GuestLayout({ children }) {
                   alt="Barangay Logo"
                   style={{ width: 40, height: 40, marginRight: 10 }}
                 />
-                <Typography variant="h6">Barangay 137</Typography>
+                <Typography variant="h6">Barangay XYZ</Typography>
               </Box>
               <Typography variant="body2">
                 Serving our community with integrity and dedication.
@@ -478,7 +478,7 @@ export default function GuestLayout({ children }) {
                 Contact Us
               </Typography>
               <Typography variant="body2" paragraph>
-                <Box component="span" sx={{ fontWeight: 600 }}>Address:</Box> Barangay 137, Caloocan City
+                <Box component="span" sx={{ fontWeight: 600 }}>Address:</Box> Barangay XYZ, Caloocan City
               </Typography>
               <Typography variant="body2" paragraph>
                 <Box component="span" sx={{ fontWeight: 600 }}>Phone:</Box> (02) 8123-4567
@@ -492,7 +492,7 @@ export default function GuestLayout({ children }) {
           <Divider sx={{ my: 2, bgcolor: 'rgba(255,255,255,0.2)' }} />
           
           <Typography variant="body2" align="center">
-            © {new Date().getFullYear()} Barangay 137. All rights reserved.
+            © {new Date().getFullYear()} Barangay XYZ. All rights reserved.
           </Typography>
         </Container>
       </Footer>
