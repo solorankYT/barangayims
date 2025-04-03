@@ -41,6 +41,15 @@ import { router } from '@inertiajs/react';
 
 const drawerWidth = 260;
 
+const handleLogout = () => {
+    router.post(route('logout'), {}, {
+        preserveState: false,  // Ensures a clean session reset
+        onSuccess: () => {
+            router.visit(route('login')); // ✅ Redirects to login after logout
+        }
+    });
+};
+
 export default function AuthenticatedLayout({ header, children }) {
     const { user } = usePage().props.auth;
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -51,14 +60,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
     const handleMenuClose = () => setAnchorEl(null);
 
-    const handleLogout = () => {
-        router.post(route('logout'), {}, {
-            preserveState: false,  // Ensures a clean session reset
-            onSuccess: () => {
-                router.visit(route('login')); // ✅ Redirects to login after logout
-            }
-        });
-    };
+
 
     const navItems = [
         { label: "Dashboard", icon: <DashboardIcon />, route: "dashboard" },
@@ -225,7 +227,7 @@ function SidebarContent({ navItems, userManagementItems, onClose }) {
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={onClose}>
+                    <ListItemButton onClick={handleLogout}>
                         <ListItemIcon sx={{ color: "#000" }}>
                             <LogoutIcon />
                         </ListItemIcon>
