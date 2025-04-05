@@ -32,7 +32,14 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                'unique:users,email', // This already checks if email exists
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'birthday' => 'required|date|before:today',
             'address' => 'required|string|max:255',
@@ -41,7 +48,14 @@ class RegisteredUserController extends Controller
             'city' => 'required|string|max:255',
             'zip_code' => 'required|string|max:10|regex:/^[0-9\- ]+$/',
         ]);
-
+    
+        // Additional check (though the unique rule already handles this)
+        if (User::where('email', $request->email)->exists()) {
+            return back()->withErrors([
+                'email' => 'This email is already registered.',
+            ])->withInput();
+        }
+    
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -52,11 +66,9 @@ class RegisteredUserController extends Controller
             'contact_number' => $request->contact_number,
             'city' => $request->city,
             'zip_code' => $request->zip_code,
-
         ]);
-
+    
         event(new Registered($user));
-            return redirect(route('login', absolute: false ));
-
+        return redirect(route('login', absolute: false));
     }
 }

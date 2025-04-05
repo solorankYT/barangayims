@@ -33,25 +33,23 @@ class CertificateRequestsController extends Controller
             $validated = $request->validate([
                 'userID' => 'required|exists:users,id',
                 'certificateType' => 'required|string|max:100',
-                'purpose' => 'required|string|max:255',
-                'remarks' => 'nullable|string|max:255',
+                'purpose' => 'required|string|max:500',
+                'remarks' => 'nullable|string|max:500',
             ]);
-
-            $validated['certificateID'] = null;
-
-            CertificateRequests::create([
-                'userID' => $request->userID,
-                'certificateType' => $request->certificateType,
-                'status' => "Pending",
-                'purpose' => $request->purpose,
-                'remarks' => $request->remarks,
-                'certificateID' => null,
+    
+            $certificateRequest = CertificateRequests::create([
+                'userID' => $validated['userID'],
+                'certificateType' => $validated['certificateType'],
+                'status' => 'Pending', // Default status
+                'purpose' => $validated['purpose'],
+                'remarks' => $validated['remarks'] ?? null,
             ]);
-
+    
             return redirect()->route('admincertificate')->with('success', 'Certificate request created successfully.');
+    
         } catch (\Exception $e) {
-            Log::error('Error creating certificate request:', ['message' => $e->getMessage()]);
-            return back()->with('error', 'An error occurred while creating the certificate request.');
+            Log::error('Certificate request creation failed: '.$e->getMessage());
+            return back()->withInput()->with('error', 'Failed to create certificate request: '.$e->getMessage());
         }
     }
 

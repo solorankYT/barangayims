@@ -1,90 +1,144 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { usePage, router } from '@inertiajs/react';
 import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  IconButton,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  MenuItem,
-} from "@mui/material";
-import { Add, Edit, Delete } from "@mui/icons-material";
-import { Autocomplete } from "@mui/lab";
-import { usePage, router } from "@inertiajs/react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+  Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
+  TextField, Table, TableBody, TableCell, TableContainer, TableHead,
+  TableRow, Paper, MenuItem, Chip, Snackbar, Alert, CircularProgress,
+  IconButton, Typography
+} from '@mui/material';
+import { Add, Edit, Delete, Description } from '@mui/icons-material';
+import { Autocomplete } from '@mui/lab';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import dayjs from 'dayjs';
 
-const AdminCertificateRequests = () => {
-  const { certificateRequests = [], users = [] } = usePage().props;
+const statusColors = {
+  Pending: 'warning',
+  Ongoing: 'info',
+  Completed: 'success',
+  Rejected: 'error'
+};
+
+const certificateTypes = [
+  "Barangay Clearance",
+  "Certificate of Indigency",
+  "First-Time Job Seeker Certificate",
+  "Certificate of Residency",
+  "Business Permit",
+  "Barangay ID"
+];
+
+export default function AdminCertificateRequests() {
+  const { certificateRequests = [], users = [], flash } = usePage().props;
   const [open, setOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [certificateData, setCertificateData] = useState({
+  const [loading, setLoading] = useState(false);
+  const [currentRequest, setCurrentRequest] = useState({
     certificateRequestID: null,
     userID: null,
-    certificateType: "",
-    status: "",
-    purpose: "",
-    remarks: "",
-    certificateID: null,
+    certificateType: '',
+    status: 'Pending',
+    purpose: '',
+    remarks: ''
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
   });
 
-  const handleOpen = (certificate = null) => {
-    setIsEditing(!!certificate);
-    setCertificateData(
-      certificate
-        ? { ...certificate }
-        : { certificateRequestID: null, userID: null, certificateType: "", status: "", purpose: "", remarks: "", certificateID: null }
-    );
+  useEffect(() => {
+    if (flash?.success) {
+      setSnackbar({
+        open: true,
+        message: flash.success,
+        severity: 'success'
+      });
+    }
+    if (flash?.error) {
+      setSnackbar({
+        open: true,
+        message: flash.error,
+        severity: 'error'
+      });
+    }
+  }, [flash]);
+
+  const handleOpen = (request = null) => {
+    setCurrentRequest(request ? { 
+      ...request,
+      userID: request.user?.id || null
+    } : {
+      certificateRequestID: null,
+      userID: null,
+      certificateType: '',
+      status: 'Pending',
+      purpose: '',
+      remarks: ''
+    });
     setOpen(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setCertificateData({ certificateRequestID: null, userID: null, certificateType: "", status: "", purpose: "", remarks: "", certificateID: null });
-  };
-
-  const handleSave = () => {
-    if (!certificateData.userID || !certificateData.certificateType) {
-      alert("User and Certificate Type are required.");
-      return;
+  const handleSubmit = () => {
+    if (!currentRequest.userID || !currentRequest.certificateType || !currentRequest.purpose) {
+        setSnackbar({
+            open: true,
+            message: 'Please fill all required fields',
+            severity: 'error'
+        });
+        return;
     }
 
-    const dataToSubmit = {
-      ...certificateData,
-      certificateID: null,
+    setLoading(true);
+    const isEdit = !!currentRequest.certificateRequestID;
+    const method = isEdit ? 'put' : 'post';
+    const url = isEdit 
+        ? `/admincertificate/${currentRequest.certificateRequestID}` 
+        : '/admincertificate';
+
+    // Prepare the data to match backend expectations
+    const requestData = {
+        userID: currentRequest.userID,
+        certificateType: currentRequest.certificateType,
+        purpose: currentRequest.purpose,
+        remarks: currentRequest.remarks || null,
+        // Only include status if editing
+        ...(isEdit && { status: currentRequest.status })
     };
 
-    if (isEditing) {
-      router.put(`/admincertificate/${certificateData.certificateRequestID}`, dataToSubmit, { onSuccess: () => handleClose() });
-    } else {
-      router.post("/admincertificate", dataToSubmit, { onSuccess: () => handleClose() });
-    }
-  };
+    router[method](url, requestData, {
+        onSuccess: () => {
+            setOpen(false);
+            setSnackbar({
+                open: true,
+                message: `Request ${isEdit ? 'updated' : 'created'} successfully`,
+                severity: 'success'
+            });
+        },
+        onError: (errors) => {
+            setSnackbar({
+                open: true,
+                message: `Failed to ${isEdit ? 'update' : 'create'} request`,
+                severity: 'error'
+            });
+        },
+        onFinish: () => setLoading(false)
+    });
+};
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this certificate request?")) {
+    if (window.confirm('Delete this request?')) {
       router.delete(`/admincertificate/${id}`);
     }
   };
 
   return (
     <AuthenticatedLayout header="Certificate Requests">
-      <Box sx={{ width: "100%", padding: 3 }}>
+      <Box sx={{ p: 3 }}>
         <Button
           variant="contained"
-          color="primary"
           startIcon={<Add />}
           onClick={() => handleOpen()}
           sx={{ mb: 2 }}
+          disabled={loading}
         >
           Add New Request
         </Button>
@@ -93,28 +147,47 @@ const AdminCertificateRequests = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell><b>ID</b></TableCell>
-                <TableCell><b>User</b></TableCell>
-                <TableCell><b>Certificate Type</b></TableCell>
-                <TableCell><b>Status</b></TableCell>
-                <TableCell><b>Purpose</b></TableCell>
-                <TableCell><b>Remarks</b></TableCell>
-                <TableCell><b>Actions</b></TableCell>
+                <TableCell>Request ID</TableCell>
+                <TableCell>User</TableCell>
+                <TableCell>Certificate Type</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Purpose</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {certificateRequests.length > 0 ? (
-                certificateRequests.map((cert) => (
-                  <TableRow key={cert.certificateRequestID}>
-                    <TableCell>{cert.certificateRequestID}</TableCell>
-                    <TableCell>{cert.user?.name || "Unknown User"}</TableCell>
-                    <TableCell>{cert.certificateType}</TableCell>
-                    <TableCell>{cert.status}</TableCell>
-                    <TableCell>{cert.purpose}</TableCell>
-                    <TableCell>{cert.remarks}</TableCell>
+                certificateRequests.map(request => (
+                  <TableRow key={request.certificateRequestID}>
+                    <TableCell>#{request.certificateRequestID}</TableCell>
+                    <TableCell>{request.user?.name || 'Unknown'}</TableCell>
+                    <TableCell>{request.certificateType}</TableCell>
                     <TableCell>
-                      <IconButton onClick={() => handleOpen(cert)} color="primary">
+                      <Chip 
+                        label={request.status} 
+                        color={statusColors[request.status]} 
+                      />
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 200 }}>
+                      <Typography noWrap>{request.purpose}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      {dayjs(request.created_at).format('MMM D, YYYY')}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton 
+                        onClick={() => handleOpen(request)} 
+                        disabled={loading}
+                      >
                         <Edit />
+                      </IconButton>
+                      <IconButton 
+                        onClick={() => handleDelete(request.certificateRequestID)} 
+                        disabled={loading}
+                        color="error"
+                      >
+                        <Delete />
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -122,7 +195,10 @@ const AdminCertificateRequests = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
-                    No certificate requests found.
+                    <Box py={4}>
+                      <Description fontSize="large" color="action" />
+                      <Typography>No requests found</Typography>
+                    </Box>
                   </TableCell>
                 </TableRow>
               )}
@@ -130,62 +206,125 @@ const AdminCertificateRequests = () => {
           </Table>
         </TableContainer>
 
-        {/* Add/Edit Certificate Request Dialog */}
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>{isEditing ? "Edit Certificate Request" : "New Certificate Request"}</DialogTitle>
+        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle>
+            {currentRequest.certificateRequestID ? 'Edit Request' : 'New Request'}
+          </DialogTitle>
           <DialogContent>
-            
-            {/* User Selection with Autocomplete */}
-            <Autocomplete
-              options={users}
-              getOptionLabel={(option) => option.name || ""}
-              value={users.find((user) => user.id === certificateData.userID) || null}
-              onChange={(event, newValue) => {
-                setCertificateData({ ...certificateData, userID: newValue ? newValue.id : null });
-              }}
-              renderInput={(params) => <TextField {...params} label="User" fullWidth margin="dense" />}
-            />
+            <Box sx={{ mt: 2 }}>
+              <Autocomplete
+                options={users}
+                getOptionLabel={(user) => user.name}
+                value={users.find(u => u.id === currentRequest.userID) || null}
+                onChange={(e, user) => setCurrentRequest({
+                  ...currentRequest,
+                  userID: user?.id || null
+                })}
+                renderInput={(params) => (
+                  <TextField 
+                    {...params} 
+                    label="User" 
+                    required
+                    error={!currentRequest.userID}
+                    helperText={!currentRequest.userID ? "Required" : ""}
+                  />
+                )}
+                disabled={!!currentRequest.certificateRequestID}
+              />
 
-            {/* Certificate Type as a Simple Input */}
-            <TextField
-              select
-              label="Certificate Type"
-              fullWidth
-              margin="dense"
-              value={certificateData.certificateType}
-              onChange={(e) => setCertificateData({ ...certificateData, certificateType: e.target.value })}
-            >
-              <MenuItem value="Barangay Clearance">Barangay Clearance</MenuItem>
-              <MenuItem value="Certificate of Indigency">Certificate of Indigency</MenuItem>
-              <MenuItem value="First-Time Job Seeker Certificate">First-Time Job Seeker Certificate</MenuItem>
-            </TextField>
-              
-            {isEditing && (
               <TextField
                 select
-                label="Status"
+                label="Certificate Type"
+                value={currentRequest.certificateType}
+                onChange={(e) => setCurrentRequest({
+                  ...currentRequest,
+                  certificateType: e.target.value
+                })}
                 fullWidth
-                margin="dense"
-                name="status"
-                value={certificateData.status}
-                onChange={(e) => setCertificateData({ ...certificateData, status: e.target.value })}
+                margin="normal"
+                required
+                error={!currentRequest.certificateType}
+                helperText={!currentRequest.certificateType ? "Required" : ""}
               >
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Ongoing">Ongoing</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
+                {certificateTypes.map(type => (
+                  <MenuItem key={type} value={type}>{type}</MenuItem>
+                ))}
               </TextField>
-            )}
-            <TextField label="Purpose" fullWidth margin="dense" name="purpose" value={certificateData.purpose} onChange={(e) => setCertificateData({ ...certificateData, purpose: e.target.value })} />
-            <TextField label="Remarks" fullWidth margin="dense" name="remarks" value={certificateData.remarks} onChange={(e) => setCertificateData({ ...certificateData, remarks: e.target.value })} />
+
+              <TextField
+                label="Purpose"
+                value={currentRequest.purpose}
+                onChange={(e) => setCurrentRequest({
+                  ...currentRequest,
+                  purpose: e.target.value
+                })}
+                fullWidth
+                margin="normal"
+                multiline
+                rows={3}
+                required
+                error={!currentRequest.purpose}
+                helperText={!currentRequest.purpose ? "Required" : ""}
+              />
+
+              <TextField
+                label="Remarks"
+                value={currentRequest.remarks}
+                onChange={(e) => setCurrentRequest({
+                  ...currentRequest,
+                  remarks: e.target.value
+                })}
+                fullWidth
+                margin="normal"
+                multiline
+                rows={2}
+              />
+
+              {currentRequest.certificateRequestID && (
+                <TextField
+                  select
+                  label="Status"
+                  value={currentRequest.status}
+                  onChange={(e) => setCurrentRequest({
+                    ...currentRequest,
+                    status: e.target.value
+                  })}
+                  fullWidth
+                  margin="normal"
+                >
+                  {Object.keys(statusColors).map(status => (
+                    <MenuItem key={status} value={status}>{status}</MenuItem>
+                  ))}
+                </TextField>
+              )}
+            </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose} color="secondary">Cancel</Button>
-            <Button onClick={handleSave} color="primary">{isEditing ? "Update" : "Save"}</Button>
+            <Button onClick={() => setOpen(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              variant="contained"
+              disabled={loading || !currentRequest.userID || 
+                !currentRequest.certificateType || !currentRequest.purpose}
+              startIcon={loading && <CircularProgress size={20} />}
+            >
+              {currentRequest.certificateRequestID ? 'Update' : 'Save'}
+            </Button>
           </DialogActions>
         </Dialog>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({...snackbar, open: false})}
+        >
+          <Alert severity={snackbar.severity}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </AuthenticatedLayout>
   );
-};
-
-export default AdminCertificateRequests;
+}

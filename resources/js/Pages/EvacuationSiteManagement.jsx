@@ -31,6 +31,9 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { toast } from 'react-toastify';
+
+
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -46,7 +49,7 @@ const EvacuationSiteManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     axios
       .get("/evacuationSites")
@@ -67,11 +70,19 @@ const EvacuationSiteManagement = () => {
     formik.resetForm();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this site?")) {
-      axios.delete(`/evacuationSites/${id}`).then(() => {
-        setSites((prevSites) => prevSites.filter((site) => site.id !== id));
-      });
+      setLoading(true);
+      try {
+        await axios.delete(`/evacuationSites/${id}`);
+        setSites(prev => prev.filter(site => site.id !== id));
+        toast.success("Site deleted successfully");
+      } catch (error) {
+        toast.error("Failed to delete site");
+        console.error("Delete error:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -105,19 +116,34 @@ const EvacuationSiteManagement = () => {
       contact_number: Yup.string().required("Contact Number is required"),
       link: Yup.string().required("Link is required"),
     }),
-    onSubmit: (values) => {
-      if (isEditing) {
-        axios.put(`/evacuationSites/${selectedSite.id}`, values).then((response) => {
-          setSites((prevSites) =>
-            prevSites.map((site) => (site.id === selectedSite.id ? response.data : site))
-          );
-          handleClose();
+    onSubmit: async (values) => {
+      try {
+        setLoading(true);
+        const endpoint = isEditing 
+          ? `/evacuationSites/${selectedSite.id}`
+          : "/evacuationSites";
+        const method = isEditing ? 'put' : 'post';
+        
+        const response = await axios[method](endpoint, {
+          ...values,
+          resources: JSON.stringify(values.resources) // Match backend expectation
         });
-      } else {
-        axios.post("/evacuationSites", values).then((response) => {
-          setSites((prevSites) => [...prevSites, response.data]);
-          handleClose();
-        });
+  
+        if (isEditing) {
+          setSites(prev => prev.map(site => 
+            site.id === selectedSite.id ? response.data : site
+          ));
+        } else {
+          setSites(prev => [...prev, response.data]);
+        }
+        
+        toast.success(`Site ${isEditing ? 'updated' : 'added'} successfully`);
+        handleClose();
+      } catch (error) {
+        toast.error(`Failed to ${isEditing ? 'update' : 'add'} site`);
+        console.error("Submission error:", error);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -236,20 +262,16 @@ const EvacuationSiteManagement = () => {
               ))}
 
               <TextField
-                select
-                label="Status"
-                fullWidth
-                margin="dense"
-                name="status"
-                value={formik.values.status} 
-                onChange={formik.handleChange} 
-                error={formik.touched.status && Boolean(formik.errors.status)}
-                helperText={formik.touched.status && formik.errors.status}
-              >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Full">Full</MenuItem>
-                <MenuItem value="Under Repair">Under Repair</MenuItem>
-              </TextField>
+                  select
+                  label="Status"
+                  fullWidth
+                  margin="dense"
+                  {...formik.getFieldProps("status")}
+                >
+                  <MenuItem value="Active">Active</MenuItem>
+                  <MenuItem value="Inactive">Inactive</MenuItem>
+                  <MenuItem value="Full">Full</MenuItem>
+                </TextField>
 
               <TextField label="Image link" fullWidth margin="dense" {...formik.getFieldProps("link")} />
             </FormGroup>
