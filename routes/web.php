@@ -8,6 +8,7 @@ use App\Http\Controllers\IncidentReportController;
 use App\Http\Controllers\CertificateRequestsController;
 use App\Http\Controllers\EvacuationSiteController;
 use App\Http\Controllers\WeatherDataController;
+use App\Http\Controllers\SmsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -109,6 +110,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/weatherData', [WeatherDataController::class, 'store']);
     Route::put('/weatherData/{id}', [WeatherDataController::class, 'update']);
     Route::delete('/weatherData/{id}', [WeatherDataController::class, 'destroy']);
+
+    Route::post('/sendWeatherAlert', [SmsController::class, 'sendGroupMessage']);
 });
 
 require __DIR__.'/auth.php';

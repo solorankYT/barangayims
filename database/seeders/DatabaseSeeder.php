@@ -42,25 +42,25 @@ class DatabaseSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'Juan Dela Cruz',
-                'email' => 'captain@example.com',
+                'name' => 'Barangay Captain',
+                'email' => 'barangaycaptain@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'Barangay Captain',
-                'contact_number' => '09123456781',
+                'contact_number' => '09628500142',
             ],
             [
-                'name' => 'Maria Santos',
-                'email' => 'secretary@example.com',
+                'name' => 'Barangay Secretary',
+                'email' => 'barangaysecretary@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'Barangay Secretary',
-                'contact_number' => '09123456782',
+                'contact_number' => '09666791182',
             ],
             [
-                'name' => 'Pedro Gomez',
-                'email' => 'resident@example.com',
+                'name' => 'Hans Chua',
+                'email' => 'hanschua@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'Resident',
-                'contact_number' => '09123456783',
+                'contact_number' => '09762970120',
             ],
         ];
 

@@ -134,7 +134,7 @@ const Welcome = ({ auth }) => {
               [theme.breakpoints.down('sm')]: { fontSize: '2.5rem' }
             }}
           >
-            Welcome to Barangay 137
+            Welcome to Barangay XYZ
           </Typography>
           <Typography 
             variant="h5" 
