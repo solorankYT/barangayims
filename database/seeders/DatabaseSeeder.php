@@ -75,6 +75,7 @@ class DatabaseSeeder extends Seeder
                 'address' => '123 Barangay St.',
                 'city' => 'Sample City',
                 'zip_code' => '12345',
+                'household' => null,
                 'password' => $userData['password'],
             ]);
 

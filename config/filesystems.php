@@ -29,9 +29,9 @@ return [
     */
 
     'disks' => [
-        'document_files' => [
+        'resident_files' => [
             'driver' => 'local',
-            'root' => storage_path('app/private/admin_files'),
+            'root' => storage_path('app/private/resident_files'),
             'visibility' => 'private',
             'serve' => true,
             'throw' => false,

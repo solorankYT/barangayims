@@ -22,8 +22,17 @@ return new class extends Migration
             $table->string('address');
             $table->string('city');
             $table->string('zip_code');
+            $table->boolean('household_head')->default(false);
+            $table->string('household')->nullable();
+            $table->boolean('is_verified')->default(false);
             $table->string('password');
             $table->rememberToken();
+            $table->timestamps();
+        });
+
+        Schema::create('households', function (Blueprint $table) {
+            $table->id()->primary();
+            $table->string('name');
             $table->timestamps();
         });
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Household;
 
 class RegisteredUserController extends Controller
 {
@@ -30,6 +31,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => [
@@ -47,15 +49,22 @@ class RegisteredUserController extends Controller
             'contact_number' => 'required|string|max:20|regex:/^[0-9+\- ]+$/',
             'city' => 'required|string|max:255',
             'zip_code' => 'required|string|max:10|regex:/^[0-9\- ]+$/',
+            'household_head' => 'boolean',
+            'household' => 'nullable|string|max:255',
+            'file' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
     
-        // Additional check (though the unique rule already handles this)
         if (User::where('email', $request->email)->exists()) {
             return back()->withErrors([
                 'email' => 'This email is already registered.',
             ])->withInput();
         }
     
+        if ($request->household_head) {
+            $household = Household::updateOrCreate(['name' => ($request->name . "'s Household")]);
+            $request->merge(['household' => $household->id]);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -66,8 +75,22 @@ class RegisteredUserController extends Controller
             'contact_number' => $request->contact_number,
             'city' => $request->city,
             'zip_code' => $request->zip_code,
+            'household_head' => $request->household_head,
+            'household' => $request->household,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
+
+        $file = $request->file('file');
+        $fileName = 'valid_id_' . $user->id . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('valid_ids', $fileName, 'resident_files');
     
+        $user->residentFiles()->updateOrCreate([
+            'resident_id' => $user->id,
+            'fileName' => $fileName,
+            'filePath' => $path,
+        ]);
+
         event(new Registered($user));
         return redirect(route('login', absolute: false));
     }

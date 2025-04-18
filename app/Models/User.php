@@ -21,6 +21,9 @@ class User extends Authenticatable
         'address',
         'city',
         'zip_code',
+        'household_head',
+        'household',
+        'is_verified',
         'password',
     ];
 
@@ -35,6 +38,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'birthday' => 'date:Y-m-d',
             'password' => 'hashed',
+            'household_head' => 'boolean',
+            'is_verified' => 'boolean',
         ];
     }
 
@@ -46,5 +51,15 @@ class User extends Authenticatable
     public function documentRequests()
     {
         return $this->hasMany(DocumentRequests::class, 'userID', 'id');
+    }
+
+    public function household()
+    {
+        return $this->belongsTo(Household::class, 'household'); 
+    }
+
+    public function residentFiles()
+    {
+        return $this->hasMany(ResidentFile::class, 'resident_id', 'id');
     }
 }

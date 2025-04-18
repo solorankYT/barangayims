@@ -9,12 +9,14 @@ use App\Http\Controllers\CertificateRequestsController;
 use App\Http\Controllers\EvacuationSiteController;
 use App\Http\Controllers\WeatherDataController;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\HouseholdController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -113,5 +115,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/sendWeatherAlert', [SmsController::class, 'sendGroupMessage']);
 });
+
+Route::get('/getHouseholds', [HouseholdController::class, 'index']);
+Route::post('/user/validate', [UserController::class, 'validateUser']);
+
 
 require __DIR__.'/auth.php';
