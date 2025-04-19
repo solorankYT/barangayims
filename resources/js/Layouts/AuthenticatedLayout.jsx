@@ -64,8 +64,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     const navItems = [
         { label: "Dashboard", icon: <DashboardIcon />, route: "dashboard" },
-        { label: "Certificate Application", icon: <PostAdd />, route: "admincertificate" },
-        { label: "Document and Record", icon: <Article />, route: "AdminDocuments" },
+        { label: "E-Services", icon: <Article />, route: "AdminDocuments" },
         { label: "Incident Reports", icon: <Report />, route: "incidentreport" },
     ];
 

@@ -14,12 +14,8 @@ class DocumentRequests extends Model
         'status',
         'purpose',
         'remarks',
-        'documentID',
     ];
 
-    protected $attributes = [
-        'documentID' => null, 
-    ];
     
     public function user()
     {

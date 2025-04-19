@@ -40,7 +40,7 @@ class CertificateRequestsController extends Controller
             $certificateRequest = CertificateRequests::create([
                 'userID' => $validated['userID'],
                 'certificateType' => $validated['certificateType'],
-                'status' => 'Pending', // Default status
+                'status' => 'Pending',
                 'purpose' => $validated['purpose'],
                 'remarks' => $validated['remarks'] ?? null,
             ]);

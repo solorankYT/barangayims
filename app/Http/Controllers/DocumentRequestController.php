@@ -24,7 +24,6 @@ class DocumentRequestController extends Controller
         ],
     );
     }
-
     public function store(Request $request)
     {
         try {
@@ -34,18 +33,15 @@ class DocumentRequestController extends Controller
                 'purpose' => 'required|string|max:255',
                 'remarks' => 'nullable|string|max:255',
             ]);
-
-            $validated['documentID'] = null;
-
+    
             DocumentRequests::create([
                 'userID' => $request->userID,
                 'documentTypeID' => $request->documentTypeID,
                 'status' => "Pending",
                 'purpose' => $request->purpose,
                 'remarks' => $request->remarks,
-                'documentID' => null,
             ]);
-
+    
             return redirect()->route('AdminDocuments')->with('success', 'Document request created successfully.');
         } catch (\Exception $e) {
             Log::error('Error creating document request:', ['message' => $e->getMessage()]);

@@ -1,198 +1,639 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  MenuItem,
-  InputAdornment,
+  Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
+  TextField, IconButton, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, MenuItem, InputAdornment, Chip, Grid, 
+  Typography, Divider, Select, FormControl, InputLabel, Stepper, Step,
+  StepLabel, Alert, Avatar, Checkbox, FormControlLabel, LinearProgress,
+  TableFooter, TablePagination, Snackbar
 } from "@mui/material";
-import { Add, Edit, Delete, Search } from "@mui/icons-material";
-import { Autocomplete } from "@mui/material";
+import { 
+  Add, Edit, Search, Check, Close, Download, 
+  Visibility, Person, Business, Work, Receipt 
+} from "@mui/icons-material";
 import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const AdminDocuments = () => {
-  const { documentRequests = [], documentTypes = [], users = [] } = usePage().props;
+  const { documentRequests = [], users = [], documentTypes: backendDocumentTypes = [], errors } = usePage().props;
+  
+  // Document types - using backend data if available, otherwise fallback to hardcoded
+  const documentTypes = backendDocumentTypes.length > 0 
+    ? backendDocumentTypes 
+    : [
+        { documentTypeID: 1, name: 'Barangay Clearance' },
+        { documentTypeID: 2, name: 'Certificate of Indigency' },
+        { documentTypeID: 3, name: 'First Time Job Seeker Certificate' },
+        { documentTypeID: 4, name: 'Barangay Business Permit' },
+        { documentTypeID: 5, name: 'Barangay Blotter Report' }
+      ];
+
   const [open, setOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [documentData, setDocumentData] = useState({
-    documentRequestID: null,
-    userID: null,
-    documentTypeID: null,
-    status: "Pending", // Default status as per backend logic
-    purpose: "",
-    remarks: "",
-    documentID: null, // Always null for new requests
+  const [currentRequest, setCurrentRequest] = useState(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [filter, setFilter] = useState("all");
+  const [selected, setSelected] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  const [advancedFilters, setAdvancedFilters] = useState({
+    document_type_id: ''
   });
 
-  const handleOpen = (document = null) => {
-    setIsEditing(!!document);
-    setDocumentData(
-      document
-        ? { ...document }
-        : { documentRequestID: null, userID: null, documentTypeID: null, status: "Pending", purpose: "", remarks: "", documentID: null }
-    );
+  const handleOpen = (request = null) => {
+    setCurrentRequest(request || {
+      id: null,
+      user_id: users.length ? users[0].id : null,
+      document_type_id: documentTypes.length ? documentTypes[0].documentTypeID : null,
+      status: 'Pending',
+      purpose: '',
+      remarks: '',
+      staff_notes: '',
+      full_name: '',
+      date_of_birth: '',
+      contact_number: '',
+      address: '',
+      business_name: '',
+      business_address: '',
+      monthly_income: '',
+      is_first_time_jobseeker: false
+    });
     setOpen(true);
+    setActiveStep(0);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setDocumentData({ documentRequestID: null, userID: null, documentTypeID: null, status: "Pending", purpose: "", remarks: "", documentID: null });
-  };
-
-  const handleSave = () => {
-    if (!documentData.userID || !documentData.documentTypeID || !documentData.purpose) {
-      alert("User, Document Type, and Purpose are required.");
-      return;
-    }
-
-    const dataToSubmit = {
-      userID: documentData.userID,
-      documentTypeID: documentData.documentTypeID,
-      purpose: documentData.purpose,
-      remarks: documentData.remarks,
-      documentID: null, // Backend expects null
-      status: isEditing ? documentData.status : "Pending", // Default status when creating a new request
-    };
-
-    if (isEditing) {
-      router.put(`/AdminDocuments/${documentData.documentRequestID}`, dataToSubmit, { onSuccess: () => handleClose() });
-    } else {
-      router.post("/AdminDocuments", dataToSubmit, { onSuccess: () => handleClose() });
+  const handleStatusChange = async (id, status, notes = '') => {
+    setLoading(true);
+    try {
+      if (status === 'Rejected' && !notes) {
+        notes = prompt('Please enter rejection reason:');
+        if (notes === null) return;
+      }
+      
+      await router.put(`/AdminDocuments/${id}`, {
+        status,
+        staff_notes: notes
+      });
+      showSnackbar('Status updated successfully', 'success');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      showSnackbar('Failed to update status', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this document request?")) {
-      router.delete(`/AdminDocuments/${id}`, { onSuccess: () => setOpen(false) });
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const filteredRequests = useMemo(() => {
+    return documentRequests
+      .filter(request => {
+        const user = request.user || {};
+        const matchesSearch = 
+          user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (documentTypes.find(t => t.documentTypeID === request.documentTypeID)?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.status.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        const matchesFilter = filter === "all" || 
+          (filter === "pending" && request.status === "Pending") ||
+          (filter === "approved" && request.status === "Approved") ||
+          (filter === "rejected" && request.status === "Rejected");
+        
+        const matchesAdvancedFilters = (
+          (!advancedFilters.document_type_id || request.documentTypeID == advancedFilters.document_type_id)
+        );
+        
+        return matchesSearch && matchesFilter && matchesAdvancedFilters;
+      })
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }, [documentRequests, searchTerm, filter, advancedFilters, documentTypes]);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const formData = {
+        userID: currentRequest.user_id,
+        documentTypeID: currentRequest.document_type_id,
+        purpose: currentRequest.purpose,
+        remarks: currentRequest.remarks,
+        status: currentRequest.status || 'Pending',
+      };
+  
+      if (currentRequest.id) {
+        await router.put(`/AdminDocuments/${currentRequest.id}`, formData);
+      } else {
+        await router.post('/AdminDocuments', formData);
+      }
+      
+      showSnackbar('Request saved successfully', 'success');
+      setOpen(false);
+    } catch (error) {
+      console.error('Error saving request:', error);
+      showSnackbar('Failed to save request', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Filtered document requests based on search term
-  const filteredDocuments = documentRequests.filter((doc) =>
-    doc.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.document_type?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const statusColors = {
+    Pending: 'warning',
+    Approved: 'success',
+    Rejected: 'error'
+  };
+
+  const getDocumentIcon = (documentTypeId) => {
+    const type = documentTypes.find(t => t.documentTypeID == documentTypeId);
+    if (!type) return <Receipt />;
+    
+    switch(type.name) {
+      case 'Barangay Business Permit': return <Business color="primary" />;
+      case 'First Time Job Seeker Certificate': return <Work color="action" />;
+      case 'Certificate of Indigency': return <Receipt color="secondary" />;
+      case 'Barangay Blotter Report': return <Edit color="info" />;
+      default: return <Receipt />;
+    }
+  };
+
+  const getDocumentName = (documentTypeId) => {
+    const type = documentTypes.find(t => t.documentTypeID == documentTypeId);
+    return type?.name || 'Unknown Document Type';
+  };
 
   return (
-    <AuthenticatedLayout header="Document and Record">
-      <Box sx={{ width: "100%", padding: 3 }}>
-        {/* Search Bar */}
-        <TextField
-          variant="outlined"
-          placeholder="Search..."
-          fullWidth
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ mb: 2 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
+    <AuthenticatedLayout header="Document Requests Management">
+      <Box sx={{ p: 3 }}>
+        {loading && <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999 }} />}
+        
+        {/* Header with actions */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 3,
+          flexWrap: 'wrap',
+          gap: 2
+        }}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => handleOpen()}
+            >
+              Add Request
+            </Button>
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              variant="outlined"
+              placeholder="Search requests..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ minWidth: 300 }}
+            />
+          </Box>
+        </Box>
 
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Add />}
-          onClick={() => handleOpen()}
-          sx={{ mb: 2 }}
-        >
-          Add New Request
-        </Button>
+        {/* Filters */}
+        <Box sx={{ display: 'flex', gap: 3, mb: 3, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant={filter === "all" ? "contained" : "outlined"}
+              onClick={() => setFilter("all")}
+            >
+              All
+            </Button>
+            <Button
+              variant={filter === "pending" ? "contained" : "outlined"}
+              color="warning"
+              onClick={() => setFilter("pending")}
+            >
+              Pending
+            </Button>
+            <Button
+              variant={filter === "approved" ? "contained" : "outlined"}
+              color="success"
+              onClick={() => setFilter("approved")}
+            >
+              Approved
+            </Button>
+            <Button
+              variant={filter === "rejected" ? "contained" : "outlined"}
+              color="error"
+              onClick={() => setFilter("rejected")}
+            >
+              Rejected
+            </Button>
+          </Box>
 
-        <TableContainer component={Paper}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>Document Type</InputLabel>
+              <Select
+                value={advancedFilters.document_type_id}
+                onChange={(e) => setAdvancedFilters({...advancedFilters, document_type_id: e.target.value})}
+                label="Document Type"
+              >
+                <MenuItem value="">All Types</MenuItem>
+                {documentTypes.map(type => (
+                  <MenuItem key={type.documentTypeID} value={type.documentTypeID}>
+                    {type.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
+
+        {/* Stats Cards */}
+        <Box sx={{ display: 'flex', gap: 3, mb: 3, flexWrap: 'wrap' }}>
+          <Paper sx={{ p: 2, minWidth: 200, flexGrow: 1 }}>
+            <Typography variant="h6" color="text.secondary">Total Requests</Typography>
+            <Typography variant="h4">{documentRequests.length}</Typography>
+          </Paper>
+          <Paper sx={{ p: 2, minWidth: 200, flexGrow: 1 }}>
+            <Typography variant="h6" color="text.secondary">Pending</Typography>
+            <Typography variant="h4" color="warning.main">
+              {documentRequests.filter(r => r.status === 'Pending').length}
+            </Typography>
+          </Paper>
+          <Paper sx={{ p: 2, minWidth: 200, flexGrow: 1 }}>
+            <Typography variant="h6" color="text.secondary">Approved</Typography>
+            <Typography variant="h4" color="success.main">
+              {documentRequests.filter(r => r.status === 'Approved').length}
+            </Typography>
+          </Paper>
+          <Paper sx={{ p: 2, minWidth: 200, flexGrow: 1 }}>
+            <Typography variant="h6" color="text.secondary">Rejected</Typography>
+            <Typography variant="h4" color="error.main">
+              {documentRequests.filter(r => r.status === 'Rejected').length}
+            </Typography>
+          </Paper>
+        </Box>
+
+        {/* Requests Table */}
+        <TableContainer component={Paper} sx={{ mb: 3 }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell><b>ID</b></TableCell>
-                <TableCell><b>User</b></TableCell>
-                <TableCell><b>Document Type</b></TableCell>
-                <TableCell><b>Status</b></TableCell>
-                <TableCell><b>Purpose</b></TableCell>
-                <TableCell><b>Remarks</b></TableCell>
-                <TableCell><b>Actions</b></TableCell>
+                <TableCell>Request ID</TableCell>
+                <TableCell>Resident</TableCell>
+                <TableCell>Document Type</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Date Submitted</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredDocuments.length > 0 ? (
-                filteredDocuments.map((doc) => (
-                  <TableRow key={doc.documentRequestID}>
-                    <TableCell>{doc.documentRequestID}</TableCell>
-                    <TableCell>{doc.user?.name || "Unknown User"}</TableCell>
-                    <TableCell>{doc.document_type?.name || "Unknown Document Type"}</TableCell>
-                    <TableCell>{doc.status}</TableCell>
-                    <TableCell>{doc.purpose}</TableCell>
-                    <TableCell>{doc.remarks}</TableCell>
+              {filteredRequests.length > 0 ? (
+                filteredRequests.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((request) => (
+                  <TableRow key={request.id} hover>
+                    <TableCell>#{request.id}</TableCell>
                     <TableCell>
-                      <IconButton onClick={() => handleOpen(doc)} color="primary">
-                        <Edit />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar sx={{ width: 32, height: 32 }}>
+                          {request.user?.name?.charAt(0) || '?'}
+                        </Avatar>
+                        {request.user?.name || 'N/A'}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {getDocumentIcon(request.documentTypeID)}
+                        {getDocumentName(request.documentTypeID)}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={request.status} 
+                        color={statusColors[request.status]}
+                        variant={request.status === 'Pending' ? 'outlined' : 'filled'}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {new Date(request.created_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton 
+                        onClick={() => handleOpen(request)}
+                        color="primary"
+                        title="View Details"
+                        aria-label="View details"
+                      >
+                        <Visibility />
                       </IconButton>
+                      {request.status === 'Pending' && (
+                        <>
+                          <IconButton 
+                            onClick={() => handleStatusChange(request.id, 'Approved')}
+                            color="success"
+                            title="Approve"
+                            aria-label="Approve"
+                          >
+                            <Check />
+                          </IconButton>
+                          <IconButton 
+                            onClick={() => handleStatusChange(request.id, 'Rejected')}
+                            color="error"
+                            title="Reject"
+                            aria-label="Reject"
+                          >
+                            <Close />
+                          </IconButton>
+                        </>
+                      )}
+                      {request.status === 'Approved' && (
+                        <IconButton
+                          color="primary"
+                          title="Download Document"
+                          aria-label="Download document"
+                          onClick={() => window.open(`/documents/${request.id}/download`, '_blank')}
+                        >
+                          <Download />
+                        </IconButton>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    No document requests found.
+                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      No document requests found
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  count={filteredRequests.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={(e, newPage) => setPage(newPage)}
+                  onRowsPerPageChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    setPage(0);
+                  }}
+                />
+              </TableRow>
+            </TableFooter>
           </Table>
         </TableContainer>
 
-        {/* Add/Edit Document Request Dialog */}
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>{isEditing ? "Edit Document Request" : "New Document Request"}</DialogTitle>
-          <DialogContent>
-            {/* User Selection with Autocomplete */}
-            <Autocomplete
-              options={users}
-              getOptionLabel={(option) => option.name || ""}
-              value={users.find((user) => user.id === documentData.userID) || null}
-              onChange={(event, newValue) => {
-                setDocumentData((prev) => ({ ...prev, userID: newValue ? newValue.id : null }));
-              }}
-              renderInput={(params) => <TextField {...params} label="User" fullWidth margin="dense" required />}
-            />
+        {/* Request Detail Dialog */}
+        <Dialog 
+          open={open} 
+          onClose={() => setOpen(false)} 
+          maxWidth="md" 
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 3 } }}
+        >
+          <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {getDocumentIcon(currentRequest?.document_type_id)}
+              <Typography variant="h6">
+                {currentRequest?.id 
+                  ? `Document Request #${currentRequest.id}`
+                  : 'New Document Request'}
+              </Typography>
+            </Box>
+          </DialogTitle>
+          
+          <DialogContent dividers>
+            <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+              <Step><StepLabel>Request Details</StepLabel></Step>
+              <Step><StepLabel>Resident Information</StepLabel></Step>
+              <Step><StepLabel>Verification</StepLabel></Step>
+            </Stepper>
 
-            {/* Document Type Selection with Autocomplete */}
-            <Autocomplete
-              options={documentTypes}
-              getOptionLabel={(option) => option.name || ""}
-              value={documentTypes.find((doc) => doc.documentTypeID === documentData.documentTypeID) || null}
-              onChange={(event, newValue) => {
-                setDocumentData((prev) => ({ ...prev, documentTypeID: newValue ? newValue.documentTypeID : null }));
-              }}
-              renderInput={(params) => <TextField {...params} label="Document Type" fullWidth margin="dense" required />}
-            />
+            {activeStep === 0 && (
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Document Information
+                  </Typography>
+                  <Divider />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth margin="normal" error={!!errors?.documentTypeID}>
+                    <InputLabel>Document Type *</InputLabel>
+                    <Select
+                      value={currentRequest?.document_type_id || ''}
+                      onChange={(e) => setCurrentRequest({...currentRequest, document_type_id: e.target.value})}
+                      label="Document Type *"
+                    >
+                      {documentTypes.map(type => (
+                        <MenuItem key={type.documentTypeID} value={type.documentTypeID}>
+                          {type.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {errors?.documentTypeID && (
+                      <Typography variant="caption" color="error">
+                        {errors.documentTypeID}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth margin="normal" error={!!errors?.userID}>
+                    <InputLabel>Resident *</InputLabel>
+                    <Select
+                      value={currentRequest?.user_id || ''}
+                      onChange={(e) => setCurrentRequest({...currentRequest, user_id: e.target.value})}
+                      label="Resident *"
+                    >
+                      {users.map(user => (
+                        <MenuItem key={user.id} value={user.id}>
+                          {user.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {errors?.userID && (
+                      <Typography variant="caption" color="error">
+                        {errors.userID}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Purpose *"
+                    value={currentRequest?.purpose || ''}
+                    onChange={(e) => setCurrentRequest({...currentRequest, purpose: e.target.value})}
+                    fullWidth
+                    margin="normal"
+                    error={!!errors?.purpose}
+                    helperText={errors?.purpose}
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Remarks"
+                    value={currentRequest?.remarks || ''}
+                    onChange={(e) => setCurrentRequest({...currentRequest, remarks: e.target.value})}
+                    fullWidth
+                    margin="normal"
+                    multiline
+                    rows={2}
+                  />
+                </Grid>
+              </Grid>
+            )}
 
-            <TextField label="Purpose" fullWidth margin="dense" name="purpose" value={documentData.purpose} onChange={(e) => setDocumentData({ ...documentData, purpose: e.target.value })} required />
-            <TextField label="Remarks" fullWidth margin="dense" name="remarks" value={documentData.remarks} onChange={(e) => setDocumentData({ ...documentData, remarks: e.target.value })} />
+            {activeStep === 1 && (
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Resident Information
+                  </Typography>
+                  <Divider />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Full Name"
+                    value={currentRequest?.user?.name || currentRequest?.full_name || ''}
+                    fullWidth
+                    margin="normal"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Contact Number"
+                    value={currentRequest?.contact_number || ''}
+                    fullWidth
+                    margin="normal"
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Address"
+                    value={currentRequest?.address || ''}
+                    fullWidth
+                    margin="normal"
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {activeStep === 2 && (
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Verification
+                  </Typography>
+                  <Divider />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth margin="normal">
+                    <InputLabel>Status *</InputLabel>
+                    <Select
+                      value={currentRequest?.status || 'Pending'}
+                      onChange={(e) => setCurrentRequest({...currentRequest, status: e.target.value})}
+                      label="Status *"
+                    >
+                      <MenuItem value="Pending">Pending</MenuItem>
+                      <MenuItem value="Approved">Approved</MenuItem>
+                      <MenuItem value="Rejected">Rejected</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Staff Notes"
+                    value={currentRequest?.staff_notes || ''}
+                    onChange={(e) => setCurrentRequest({...currentRequest, staff_notes: e.target.value})}
+                    fullWidth
+                    margin="normal"
+                    multiline
+                    rows={4}
+                    placeholder="Enter verification notes..."
+                  />
+                </Grid>
+                
+                {currentRequest?.status === 'Rejected' && (
+                  <Grid item xs={12}>
+                    <Alert severity="warning">
+                      Please provide clear reasons for rejection that will be shared with the resident.
+                    </Alert>
+                  </Grid>
+                )}
+              </Grid>
+            )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="secondary">Cancel</Button>
-            <Button onClick={handleSave} color="primary">{isEditing ? "Update" : "Save"}</Button>
+          
+          <DialogActions sx={{ borderTop: 1, borderColor: 'divider', p: 2 }}>
+            <Box sx={{ flex: 1 }}>
+              {activeStep > 0 && (
+                <Button onClick={() => setActiveStep(activeStep - 1)}>
+                  Back
+                </Button>
+              )}
+            </Box>
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button onClick={() => setOpen(false)} variant="outlined">
+                Cancel
+              </Button>
+              
+              {activeStep < 2 ? (
+                <Button 
+                  onClick={() => setActiveStep(activeStep + 1)} 
+                  variant="contained"
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleSubmit}
+                  variant="contained"
+                  color="primary"
+                  disabled={loading}
+                >
+                  {currentRequest?.id ? 'Save Changes' : 'Submit Request'}
+                </Button>
+              )}
+            </Box>
           </DialogActions>
         </Dialog>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          message={snackbar.message}
+        />
       </Box>
     </AuthenticatedLayout>
   );

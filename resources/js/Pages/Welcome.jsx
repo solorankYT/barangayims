@@ -87,19 +87,19 @@ const Welcome = ({ auth }) => {
       action: setOpenIncident,
       description: "Report emergencies or community issues"
     },
+    // { 
+    //   title: "Request Document", 
+    //   icon: <Description fontSize="large" />, 
+    //   color: "success",
+    //   action: setOpenDocument,
+    //   description: "Obtain barangay clearance or certifications"
+    // },
     { 
-      title: "Request Document", 
+      title: "e-service Application", 
       icon: <Description fontSize="large" />, 
       color: "success",
-      action: setOpenDocument,
-      description: "Obtain barangay clearance or certifications"
-    },
-    { 
-      title: "Request Certificate", 
-      icon: <WorkspacePremium fontSize="large" />, 
-      color: "primary",
       action: setOpenCertificate,
-      description: "Apply for residency or good moral certificates"
+      description: "Obtain barangay clearance or certifications"
     },
   ];
 
