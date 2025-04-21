@@ -187,7 +187,7 @@ class ResidentController extends Controller
                 $path = $file->storeAs('valid_ids', $fileName, 'resident_files');
     
                 $user->residentFiles()->updateOrCreate([
-                    'user_id' => $user->id,
+                    'resident_id' => $user->id,
                     'fileName' => $fileName,
                     'filePath' => $path,
                     'created_at' => now(),
