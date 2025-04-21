@@ -12,19 +12,19 @@ class ResidentFile extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
-        'user_id',
+        'resident_id',
         'fileName',
         'filePath',
     ];
 
     protected $casts = [
-        'user_id' => 'int',
+        'resident_id' => 'int',
         'fileName' => 'string',
         'filePath' => 'string',
     ];
 
     public function resident()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
+        return $this->belongsTo(User::class, 'resident_id', 'id');
     }
 }
