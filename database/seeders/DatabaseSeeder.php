@@ -18,11 +18,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->seedHouseholds();
         $this->seedRoles();
         $this->seedUsers();
         $this->seedDocumentTypes();
         $this->seedSites();
-        $this->seedHouseholds();
     }
 
     /**
@@ -77,7 +77,7 @@ class DatabaseSeeder extends Seeder
                 'address' => '123 Barangay St.',
                 'city' => 'Sample City',
                 'zip_code' => '12345',
-                'household' => null,
+                'household_id' => 2,
                 'password' => $userData['password'],
             ]);
 
@@ -185,7 +185,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Household 1'],
             ['name' => 'Household 2'],
             ['name' => 'Household 3'],
-            // Add more households as needed
         ];
 
         foreach ($households as $household) {

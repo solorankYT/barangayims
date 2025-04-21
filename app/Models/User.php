@@ -22,7 +22,7 @@ class User extends Authenticatable
         'city',
         'zip_code',
         'household_head',
-        'household',
+        'household_id',
         'is_verified',
         'password',
     ];
@@ -40,6 +40,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'household_head' => 'boolean',
             'is_verified' => 'boolean',
+            'household_id' => 'integer',
         ];
     }
 
@@ -55,7 +56,7 @@ class User extends Authenticatable
 
     public function household()
     {
-        return $this->belongsTo(Household::class, 'household', 'id'); 
+        return $this->belongsTo(Household::class);
     }
 
     public function residentFiles()

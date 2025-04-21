@@ -13,7 +13,9 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Household;
+use App\Models\ResidentFile;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class RegisteredUserController extends Controller
 {
@@ -33,7 +35,8 @@ class RegisteredUserController extends Controller
     
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        Log::info('Registration request data: ', $request->all());
+        $request->validate([
             'first_name' => 'required|string|max:255',
             'middle_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -56,36 +59,56 @@ class RegisteredUserController extends Controller
             'household' => 'nullable|exists:households,id',
         ]);
 
-        if ($validated['household_head']) {
-            $household = Household::create([
-                'name' => "{$validated['first_name']}'s Household",
-                'head_id' => null // Temporary
-            ]);
-            $validated['household'] = $household->id;
-        }
-
         if (User::where('email', $request->email)->exists()) {
             return back()->withErrors([
                 'email' => 'This email is already registered.',
             ])->withInput();
         }
 
-        $user = User::create([
-            'name' => $request->first_name . ' ' . $request->middle_name . ' ' . $request->last_name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'birthday' => $request->birthday,
-            'address' => $request->address,
-            'gender' => $request->gender,
-            'contact_number' => $request->contact_number,
-            'city' => $request->city,
-            'zip_code' => $request->zip_code,
-            'household_head' => $request->household_head,
-            'household' => $request->household,
-        ]);
+        try{
+            $user = User::create([
+                'name' => $request->first_name . ' ' . $request->middle_name . ' ' . $request->last_name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'birthday' => $request->birthday,
+                'address' => $request->address,
+                'gender' => $request->gender,
+                'contact_number' => $request->contact_number,
+                'city' => $request->city,
+                'zip_code' => $request->zip_code,
+                'household_head' => $request->household_head,
+                'household_id' => $request->household,
+            ]);
 
-        if ($validated['household_head']) {
-            $household->update(['head_id' => $user->id]);
+            if ($request->household_head) {
+                $household = Household::create([
+                    'name' => $request->first_name . "'s Household",
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $user->household_id = $household->id;
+                $user->save();
+            }
+
+            if ($request->hasFile('valid_id')){
+                $file = $request->file('valid_id');
+                $fileName = 'valid_id_' . $user->id . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('valid_ids', $fileName, 'resident_files');
+
+                ResidentFile::create([
+                    'resident_id' => $user->id,
+                    'fileName' => $fileName,
+                    'filePath' => $path,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+        }catch(\Exception $e){
+            Log::info('Error creating user: ' . $e->getMessage());
+            return back()->withErrors([
+                'registration' => 'An error occurred while creating your account. Please try again later.',
+            ])->withInput();
         }
         
         event(new Registered($user));

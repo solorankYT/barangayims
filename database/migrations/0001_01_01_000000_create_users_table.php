@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::create('households', function (Blueprint $table) {
+            $table->id()->primary();
+            $table->string('name');
+            $table->timestamps();
+        });
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -23,13 +29,13 @@ return new class extends Migration
             $table->string('city');
             $table->string('zip_code');
             $table->boolean('household_head')->default(false)->nullable();
-            $table->foreignId('household')->nullable();
+            $table->foreignId('household_id')->nullable();
             $table->boolean('is_verified')->default(false);
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
 
-            $table->foreign('household')
+            $table->foreign('household_id')
                 ->references('id')
                 ->on('households');
         });
