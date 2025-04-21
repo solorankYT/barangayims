@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('address');
             $table->string('city');
             $table->string('zip_code');
-            $table->boolean('household_head')->default(false);
+            $table->boolean('household_head')->default(false)->nullable();
             $table->string('household')->nullable();
             $table->boolean('is_verified')->default(false);
             $table->string('password');
