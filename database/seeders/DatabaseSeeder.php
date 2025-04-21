@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
 use App\Models\EvacuationSite;
+use App\Models\Household;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -21,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->seedUsers();
         $this->seedDocumentTypes();
         $this->seedSites();
+        $this->seedHouseholds();
     }
 
     /**
@@ -174,6 +176,20 @@ class DatabaseSeeder extends Seeder
 
         foreach ($sites as $site) {
             EvacuationSite::create($site);
+        }
+    }
+
+    public function seedHouseholds()
+    {
+        $households = [
+            ['name' => 'Household 1'],
+            ['name' => 'Household 2'],
+            ['name' => 'Household 3'],
+            // Add more households as needed
+        ];
+
+        foreach ($households as $household) {
+            Household::create($household);
         }
     }
 }
