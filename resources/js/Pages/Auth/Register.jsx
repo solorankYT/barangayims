@@ -6,6 +6,8 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider, Button, FormControlLabel, Checkbox } from '@mui/material';
 import { Person, Email, Cake, Home, Transgender, Phone, Lock, CheckBox, CloudUpload } from '@mui/icons-material';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -21,9 +23,33 @@ export default function Register() {
         contact_number: '',
         city: '',
         zip_code: '',
-        is_household: false,
-        id_verification: null,
+        household_head: false,
+        household: '',
+        valid_ID: null,
     });
+
+    useEffect(() => {
+        console.log("Form data changed:", data);
+    }, [data]);
+
+    const [households, setHouseholds] = useState([]);
+    const [isHouseholdHead, setIsHouseholdHead] = useState(false);
+
+    const fetchHouseholds = async () => {
+        try {
+            const response = await axios.get('/getHouseholds');
+            if (response.data && response.data.households) {
+                setHouseholds(response.data.households); // Set the households array
+            }
+        } catch (error) {
+            console.error("Error fetching households:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchHouseholds();
+    }, []);
+        
 
     const submit = (e) => {
         e.preventDefault();
@@ -209,13 +235,36 @@ export default function Register() {
                            <FormControlLabel 
                                 control={
                                     <Checkbox 
-                                    checked={data.is_household}
-                                    onChange={(e) => setData('is_household', e.target.checked)}
+                                        checked={data.household_head}
+                                        onChange={(e) => {
+                                            setData('household_head', e.target.checked);
+                                            setIsHouseholdHead(e.target.checked); // Update isHouseholdHead state
+                                        }}
                                     />
                                 }
                                 label="Household?"
-                                />
+                            />
                             
+                            {!isHouseholdHead && ( // Conditionally render the dropdown
+                                <FormControl fullWidth sx={{ mb: 3 }}>
+                                    <InputLabel htmlFor="household" value="Household" />
+                                    <Select
+                                        id="household"
+                                        name="household"
+                                        value={data.household.name}
+                                        onChange={(e) => setData('household', e.target.value)}
+                                        required
+                                    >
+                                        {households.map((household) => (
+                                            <MenuItem key={household.id} value={household.id}>
+                                                {household.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    <InputError message={errors.household} />
+                                </FormControl>
+                            )}
+
                             <Divider sx={{ my: 3 }} />
                             
                             <FormControl fullWidth sx={{ mb: 3 }}>
@@ -253,7 +302,7 @@ export default function Register() {
                             <input 
                                 type="file" 
                                 hidden 
-                                onChange={(e) => setData('id_verification', e.target.files[0])}
+                                onChange={(e) => setData('valid_ID', e.target.files[0])}
                                 accept="image/*"
                             />
                             </Button>

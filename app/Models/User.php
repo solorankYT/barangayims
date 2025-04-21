@@ -60,6 +60,6 @@ class User extends Authenticatable
 
     public function residentFiles()
     {
-        return $this->hasMany(ResidentFile::class, 'resident_id', 'id');
+        return $this->hasMany(ResidentFile::class, 'user_id', 'id');
     }
 }

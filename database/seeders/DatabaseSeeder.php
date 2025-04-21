@@ -56,11 +56,11 @@ class DatabaseSeeder extends Seeder
                 'contact_number' => '09666791182',
             ],
             [
-                'name' => 'Hans Chua',
-                'email' => 'hanschua@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'Resident',
-                'contact_number' => '09762970120',
+                'name' => 'Sample Account',
+                'email' => 'barangayims@gmail.com',
+                'password' => Hash::make('123'),
+                'role' => 'Barangay Captain',
+                'contact_number' => '09606200611',
             ],
         ];
 

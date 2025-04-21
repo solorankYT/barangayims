@@ -119,5 +119,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/getHouseholds', [HouseholdController::class, 'index']);
 Route::post('/user/validate', [UserController::class, 'validateUser']);
 
+Route::post('/registerUser', [ResidentController::class, 'registerUser']);
 
 require __DIR__.'/auth.php';
