@@ -4,12 +4,14 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider } from '@mui/material';
-import { Person, Email, Cake, Home, Transgender, Phone, Lock } from '@mui/icons-material';
+import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider, Button } from '@mui/material';
+import { Person, Email, Cake, Home, Transgender, Phone, Lock, CheckBox } from '@mui/icons-material';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
+        first_name: '',
+        middle_name: '',
+        last_name: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -55,19 +57,50 @@ export default function Register() {
                         </Typography>
                         
                         <form onSubmit={submit}>
+
                             <FormControl fullWidth sx={{ mb: 3 }}>
-                                <InputLabel htmlFor="name" value="Full Name" />
+                                <InputLabel htmlFor="first_name" value="First Name" />
                                 <TextInput
-                                    id="name"
-                                    name="name"
-                                    value={data.name}
-                                    autoComplete="name"
+                                    id="first_name"
+                                    name="first_name"
+                                    value={data.first_name}
+                                    autoComplete="first_name"
                                     isFocused={true}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) => setData('first_name', e.target.value)}
                                     required
                                     startAdornment={<Person sx={{ color: 'action.active', mr: 1 }} />}
                                 />
-                                <InputError message={errors.name} />
+                                <InputError message={errors.first_name} />
+                            </FormControl>
+
+                            <FormControl fullWidth sx={{ mb: 3 }}>
+                                <InputLabel htmlFor="middle_name" value="Middle Name" />
+                                <TextInput
+                                    id="middle_name"
+                                    name="middle_name"
+                                    value={data.middle_name}
+                                    autoComplete="middle_name"
+                                    isFocused={true}
+                                    onChange={(e) => setData('middle_name', e.target.value)}
+                                    required
+                                    startAdornment={<Person sx={{ color: 'action.active', mr: 1 }} />}
+                                />
+                                <InputError message={errors.middle_name} />
+                            </FormControl>
+
+                            <FormControl fullWidth sx={{ mb: 3 }}>
+                                <InputLabel htmlFor="last_name" value="Last Name" />
+                                <TextInput
+                                    id="last_name"
+                                    name="last_name"
+                                    value={data.last_name}
+                                    autoComplete="last_name"
+                                    isFocused={true}
+                                    onChange={(e) => setData('last_name', e.target.value)}
+                                    required
+                                    startAdornment={<Person sx={{ color: 'action.active', mr: 1 }} />}
+                                />
+                                <InputError message={errors.last_name} />
                             </FormControl>
                             
                             <FormControl fullWidth sx={{ mb: 3 }}>
@@ -170,7 +203,7 @@ export default function Register() {
                                 />
                                 <InputError message={errors.contact_number} />
                             </FormControl>
-                            
+
                             <Divider sx={{ my: 3 }} />
                             
                             <FormControl fullWidth sx={{ mb: 3 }}>
@@ -201,7 +234,16 @@ export default function Register() {
                                 />
                                 <InputError message={errors.password_confirmation} />
                             </FormControl>
-                            
+
+
+                          <Button>Upload ID</Button>
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                            Upload a valid ID for verification.
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                            (e.g., Government ID addressed to the barangay address,  driver's license, passport) 
+                            </Typography>
+  
                             <Box sx={{ 
                                 mt: 4,
                                 display: 'flex',
