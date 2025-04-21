@@ -1,11 +1,12 @@
+import { useEffect, useState } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider, Button } from '@mui/material';
-import { Person, Email, Cake, Home, Transgender, Phone, Lock, CheckBox } from '@mui/icons-material';
+import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider, Button, FormControlLabel, Checkbox } from '@mui/material';
+import { Person, Email, Cake, Home, Transgender, Phone, Lock } from '@mui/icons-material';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -21,7 +22,30 @@ export default function Register() {
         contact_number: '',
         city: '',
         zip_code: '',
+        household_head: false,
     });
+
+    useEffect(() => {
+        console.log("Form data changed:", data);
+    }, [data]);
+
+    const [households, setHouseholds] = useState([]);
+    const [isHouseholdHead, setIsHouseholdHead] = useState(false);
+
+    const fetchHouseholds = async () => {
+        try {
+            const response = await axios.get('/getHouseholds');
+            if (response.data && response.data.households) {
+                setHouseholds(response.data.households); // Set the households array
+            }
+        } catch (error) {
+            console.error("Error fetching households:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchHouseholds();
+    }, []);
 
     const submit = (e) => {
         e.preventDefault();
@@ -203,6 +227,19 @@ export default function Register() {
                                 />
                                 <InputError message={errors.contact_number} />
                             </FormControl>
+
+
+                            <FormControlLabel 
+                                control={
+                                    <Checkbox 
+                                    checked={data.is_household}
+                                    onChange={(e) => setData('is_household', e.target.checked)}
+                                    />
+                                }
+                                label="Household?"
+                                />
+
+
 
                             <Divider sx={{ my: 3 }} />
                             
