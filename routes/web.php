@@ -10,6 +10,7 @@ use App\Http\Controllers\EvacuationSiteController;
 use App\Http\Controllers\WeatherDataController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\HouseholdController;
+use App\Http\Controllers\ResidentFileController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -120,5 +121,7 @@ Route::get('/getHouseholds', [HouseholdController::class, 'index']);
 Route::post('/user/validate', [UserController::class, 'validateUser']);
 
 Route::post('/registerUser', [ResidentController::class, 'registerUser']);
+
+Route::get('/valid_ids/{filename}',[ResidentFileController::class, 'serveValidID']);
 
 require __DIR__.'/auth.php';

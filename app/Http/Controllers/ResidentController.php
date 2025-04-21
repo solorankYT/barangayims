@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\ResidentFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +16,17 @@ class ResidentController extends Controller
     {
         $residents = User::all();
 
+        $baseUrl = config('app.url');
+        foreach ($residents as $resident) {
+            $valid_id = ResidentFile::where('resident_id', $resident->id)->first();
+    
+            if ($valid_id) {
+                $resident->valid_id_url = $baseUrl . '/valid_ids/' . $valid_id->fileName; 
+            } else {
+                $resident->valid_id_url = null;
+            }
+        }
+        Log::info('Residents data:', $residents->toArray());
         return Inertia::render('ResidentManagement', [
             'residents' => $residents
         ]);

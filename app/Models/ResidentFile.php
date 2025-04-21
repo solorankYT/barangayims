@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class ResidentFile extends Model
 {
@@ -27,4 +28,5 @@ class ResidentFile extends Model
     {
         return $this->belongsTo(User::class, 'resident_id', 'id');
     }
+
 }
