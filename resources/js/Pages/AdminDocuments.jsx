@@ -16,8 +16,6 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const AdminDocuments = () => {
   const { documentRequests = [], users = [], documentTypes: backendDocumentTypes = [], errors } = usePage().props;
-  
-  // Document types - using backend data if available, otherwise fallback to hardcoded
   const documentTypes = backendDocumentTypes.length > 0 
     ? backendDocumentTypes 
     : [
@@ -299,6 +297,7 @@ const AdminDocuments = () => {
                 <TableCell>Resident</TableCell>
                 <TableCell>Document Type</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Pickup Option</TableCell>
                 <TableCell>Date Submitted</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
