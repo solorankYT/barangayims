@@ -52,6 +52,7 @@ class RegisteredUserController extends Controller
             'contact_number' => 'required|string|max:20|regex:/^[0-9+\- ]+$/',
             'city' => 'required|string|max:255',
             'zip_code' => 'required|string|max:10|regex:/^[0-9\- ]+$/',
+            'household_head' => 'required|boolean',
         ]);
 
         if (User::where('email', $request->email)->exists()) {
@@ -70,6 +71,7 @@ class RegisteredUserController extends Controller
             'contact_number' => $request->contact_number,
             'city' => $request->city,
             'zip_code' => $request->zip_code,
+            'household_head' => $request->household_head,
         ]);
 
         event(new Registered($user));
