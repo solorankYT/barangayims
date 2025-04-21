@@ -15,6 +15,7 @@ class Household extends Model
 
     public function members()
     {
-        return $this->hasMany(User::class, 'household'); 
+        return $this->hasMany(User::class, 'household', 'id');
     }
+
 }

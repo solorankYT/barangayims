@@ -55,7 +55,7 @@ class User extends Authenticatable
 
     public function household()
     {
-        return $this->belongsTo(Household::class, 'household'); 
+        return $this->belongsTo(Household::class, 'household', 'id'); 
     }
 
     public function residentFiles()
