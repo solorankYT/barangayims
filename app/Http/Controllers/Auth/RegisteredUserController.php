@@ -57,6 +57,7 @@ class RegisteredUserController extends Controller
             'zip_code' => 'required|string|max:10|regex:/^[0-9\- ]+$/',
             'household_head' => 'required|boolean',
             'household' => 'nullable|exists:households,id',
+            'valid_id' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         if (User::where('email', $request->email)->exists()) {
