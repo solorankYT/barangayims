@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Box, Container, Paper } from '@mui/material';
+import { Box, Container, Paper, Typography } from '@mui/material';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -43,8 +43,15 @@ export default function Login({ status, canResetPassword }) {
                                 {status}
                             </Typography>
                         )}
-
                         <form onSubmit={submit}>
+                        <Typography variant="h4" component="h1" gutterBottom sx={{ 
+                            fontWeight: 700,
+                            mb: 3,
+                            textAlign: 'center',
+                            color: 'primary.main'
+                        }}>
+                            Login
+                        </Typography>
                             <div className="text-left">
                                 <InputLabel htmlFor="email" value="Email" />
                                 <TextInput

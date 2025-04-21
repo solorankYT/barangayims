@@ -627,7 +627,7 @@ const Welcome = ({ auth }) => {
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ba?q=80&w=2070&auto=format&fit=crop"
+              src="https://content.r9cdn.net/rimg/dimg/dc/30/50ee895f-city-5103-173328842c5.jpg?width=1366&height=768&xhint=2262&yhint=1587&crop=true"
               alt="Barangay Center"
               sx={{
                 width: '100%',
