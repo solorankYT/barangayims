@@ -7,7 +7,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider, Button, FormControlLabel, Checkbox } from '@mui/material';
 import { Person, Email, Cake, Home, Transgender, Phone, Lock } from '@mui/icons-material';
-
+import axios from 'axios';
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         first_name: '',
@@ -22,7 +22,8 @@ export default function Register() {
         contact_number: '',
         city: '',
         zip_code: '',
-        household_head: false,
+        household_head: 'false',
+        household: '',
     });
 
     useEffect(() => {
@@ -232,14 +233,38 @@ export default function Register() {
                             <FormControlLabel 
                                 control={
                                     <Checkbox 
-                                    checked={data.is_household}
-                                    onChange={(e) => setData('is_household', e.target.checked)}
+                                    checked={data.household_head}
+                                    onChange={(e) => {
+                                        const isHead = e.target.checked;
+                                        setData({
+                                        ...data,
+                                        household_head: isHead,
+                                        household: isHead ? null : data.household
+                                        });
+                                    }}
                                     />
                                 }
-                                label="Household?"
+                                label="Household Head?"
                                 />
 
-
+                                {!data.household_head && households.length > 0 && (
+                                <FormControl fullWidth sx={{ mb: 3 }} error={!!errors.household}>
+                                    <InputLabel htmlFor="household">Select Household</InputLabel>
+                                    <Select
+                                    id="household"
+                                    value={data.household || ''}
+                                    onChange={(e) => setData('household', e.target.value)}
+                                    required
+                                    >
+                                    {households.map((household) => (
+                                        <MenuItem key={household.id} value={household.id}>
+                                        {household.name}
+                                        </MenuItem>
+                                    ))}
+                                    </Select>
+                                    <InputError message={errors.household} />
+                                </FormControl>
+                                )}
 
                             <Divider sx={{ my: 3 }} />
                             

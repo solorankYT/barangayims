@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
     
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'middle_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -53,7 +53,16 @@ class RegisteredUserController extends Controller
             'city' => 'required|string|max:255',
             'zip_code' => 'required|string|max:10|regex:/^[0-9\- ]+$/',
             'household_head' => 'required|boolean',
+            'household' => 'nullable|exists:households,id',
         ]);
+
+        if ($validated['household_head']) {
+            $household = Household::create([
+                'name' => "{$validated['first_name']}'s Household",
+                'head_id' => null // Temporary
+            ]);
+            $validated['household'] = $household->id;
+        }
 
         if (User::where('email', $request->email)->exists()) {
             return back()->withErrors([
@@ -72,8 +81,13 @@ class RegisteredUserController extends Controller
             'city' => $request->city,
             'zip_code' => $request->zip_code,
             'household_head' => $request->household_head,
+            'household' => $request->household,
         ]);
 
+        if ($validated['household_head']) {
+            $household->update(['head_id' => $user->id]);
+        }
+        
         event(new Registered($user));
         return redirect(route('login', absolute: false));
     }

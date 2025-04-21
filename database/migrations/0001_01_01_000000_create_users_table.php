@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+
+        
+        Schema::create('households', function (Blueprint $table) {
+            $table->id()->primary();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -34,11 +43,6 @@ return new class extends Migration
                 ->on('households');
         });
 
-        Schema::create('households', function (Blueprint $table) {
-            $table->id()->primary();
-            $table->string('name');
-            $table->timestamps();
-        });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
