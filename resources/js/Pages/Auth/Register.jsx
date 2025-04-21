@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider, Button, FormControlLabel, Checkbox } from '@mui/material';
-import { Person, Email, Cake, Home, Transgender, Phone, Lock } from '@mui/icons-material';
+import { Person, Email, Cake, Home, Transgender, Phone, Lock, CloudUpload} from '@mui/icons-material';
 import axios from 'axios';
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -24,6 +24,7 @@ export default function Register() {
         zip_code: '',
         household_head: 'false',
         household: '',
+        valid_id: '',
     });
 
     useEffect(() => {
@@ -50,7 +51,19 @@ export default function Register() {
 
     const submit = (e) => {
         e.preventDefault();
+
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+            if (key === 'valid_id' && value instanceof File) {
+              formData.append(key, value);
+            } else {
+              formData.append(key, value);
+            }
+          });
+
         post(route('register'), {
+            data: formData,
+            forceFormData: true,
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
@@ -298,13 +311,44 @@ export default function Register() {
                             </FormControl>
 
 
-                          <Button>Upload ID</Button>
-                            <Typography variant="body2" sx={{ mb: 1 }}>
-                            Upload a valid ID for verification.
-                            </Typography>
-                            <Typography variant="body2" sx={{ mb: 1 }}>
-                            (e.g., Government ID addressed to the barangay address,  driver's license, passport) 
-                            </Typography>
+                            <Button 
+                                component="label" 
+                                variant="outlined" 
+                                startIcon={<CloudUpload />}
+                                fullWidth
+                                sx={{ mb: 1 }}
+                                >
+                                Upload ID
+                                <input 
+                                    type="file" 
+                                    hidden 
+                                    required
+                                    onChange={(e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                        // Basic validation
+                                        if (e.target.files[0].size > 2 * 1024 * 1024) { // 2MB limit
+                                        alert('File size must be less than 2MB');
+                                        return;
+                                        }
+                                        setData('valid_id', e.target.files[0]);
+                                    }
+                                    }}
+                                    accept="image/*,.pdf"
+                                />
+                                </Button>
+
+                                {data.valid_id && (
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                    Selected file: {data.valid_id.name} ({Math.round(data.valid_id.size / 1024)} KB)
+                                </Typography>
+                                )}
+
+                                <Typography variant="body2" sx={{ mb: 1 }}>
+                                Upload a valid ID for verification (JPEG, PNG, or PDF, max 2MB)
+                                </Typography>
+                                <Typography variant="body2" sx={{ mb: 2 }}>
+                                (e.g., Government ID addressed to the barangay address, driver's license, passport)
+                                </Typography>
   
                             <Box sx={{ 
                                 mt: 4,
