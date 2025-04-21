@@ -95,7 +95,7 @@ const Welcome = ({ auth }) => {
     //   description: "Obtain barangay clearance or certifications"
     // },
     { 
-      title: "e-service Application", 
+      title: "E-Service Application", 
       icon: <Description fontSize="large" />, 
       color: "success",
       action: setOpenCertificate,
