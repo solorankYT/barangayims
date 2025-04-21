@@ -4,7 +4,10 @@ import {
   Button, TextField, MenuItem, Select, InputLabel,
   FormControl, FormControlLabel, Checkbox, Grid,
   Typography, Stepper, Step, StepLabel, Alert,
-  Divider, FormHelperText, Box, Avatar
+  Divider, FormHelperText, Box, Avatar,
+  FormLabel,
+  RadioGroup,
+  Radio
 } from '@mui/material';
 import { usePage, router } from '@inertiajs/react';
 import { Today, Person, Business, School, Receipt } from '@mui/icons-material';
@@ -14,7 +17,7 @@ const CertificateApplication = ({ open, handleClose }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const certificateTypes = [
     { value: 'Barangay Clearance', label: 'Barangay Clearance', icon: <Receipt /> },
     { value: 'Certificate of Indigency', label: 'Certificate of Indigency', icon: <Person /> },
@@ -26,7 +29,7 @@ const CertificateApplication = ({ open, handleClose }) => {
   const [formData, setFormData] = useState({
     resident_id: auth.user.id,
     full_name: auth.user.name || '',
-    date_of_birth: null,
+    birthday: auth.user.birthday,
     place_of_birth: '',
     sex: '',
     civil_status: '',
@@ -239,11 +242,11 @@ const CertificateApplication = ({ open, handleClose }) => {
               <TextField
                 fullWidth
                 label="Full Name"
-                name="full_name"
-                value={formData.full_name}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                error={!!errors.full_name}
-                helperText={errors.full_name}
+                error={!!errors.name}
+                helperText={errors.name}
                 required
               />
             </Grid>
@@ -252,72 +255,34 @@ const CertificateApplication = ({ open, handleClose }) => {
             <TextField
               fullWidth
               label="Date of Birth"
-              name="date_of_birth"
+              name="birthday"
               type="date"  // Standard HTML5 date input
-              value={formData.date_of_birth || ''}
+              value={formData.birthday || ''}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}  // Fixes label overlap
-              error={!!errors.date_of_birth}
-              helperText={errors.date_of_birth}
+              error={!!errors.birthday}
+              helperText={errors.birthday}
               required
             />
             </Grid>
             
-            <Grid item xs={6} md={3}>
-              <TextField
-                fullWidth
-                label="Place of Birth"
-                name="place_of_birth"
-                value={formData.place_of_birth}
-                onChange={handleChange}
-                error={!!errors.place_of_birth}
-                helperText={errors.place_of_birth}
-                required
-              />
-            </Grid>
             
             <Grid item xs={6} md={3}>
-              <FormControl fullWidth required error={!!errors.sex}>
-                <InputLabel>Sex</InputLabel>
+              <FormControl fullWidth required error={!!errors.gender}>
+                <InputLabel>Gender</InputLabel>
                 <Select 
-                  name="sex" 
-                  value={formData.sex} 
+                  name="gender" 
+                  value={formData.gender} 
                   onChange={handleChange}
                 >
                   {['Male', 'Female', 'Other'].map(option => (
                     <MenuItem key={option} value={option}>{option}</MenuItem>
                   ))}
                 </Select>
-                {errors.sex && <FormHelperText>{errors.sex}</FormHelperText>}
+                {errors.gender && <FormHelperText>{errors.gender}</FormHelperText>}
               </FormControl>
             </Grid>
             
-            <Grid item xs={6} md={3}>
-              <FormControl fullWidth required error={!!errors.civil_status}>
-                <InputLabel>Civil Status</InputLabel>
-                <Select 
-                  name="civil_status" 
-                  value={formData.civil_status} 
-                  onChange={handleChange}
-                >
-                  {['Single', 'Married', 'Widowed', 'Separated'].map(status => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
-                  ))}
-                </Select>
-                {errors.civil_status && <FormHelperText>{errors.civil_status}</FormHelperText>}
-              </FormControl>
-            </Grid>
-            
-            <Grid item xs={6} md={3}>
-              <TextField
-                fullWidth
-                label="Nationality"
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleChange}
-                required
-              />
-            </Grid>
             
             <Grid item xs={12} md={6}>
               <TextField
@@ -414,6 +379,17 @@ const CertificateApplication = ({ open, handleClose }) => {
                 style={{ marginTop: '16px' }}
               />
             </Grid>
+
+            <Grid item xs={12} sx={{ mt: 2 }}>
+              <FormControl>
+                <FormLabel>Delivery option</FormLabel>
+                <RadioGroup row>
+                    <FormControlLabel value="pick_up" control={<Radio/>} label="Pick-Up"/>
+                    <FormControlLabel value="email" control={<Radio/>} label="Email"/>
+                  </RadioGroup>
+              </FormControl>
+            </Grid>
+           
 
             {/* Terms and Conditions */}
             <Grid item xs={12} sx={{ mt: 2 }}>

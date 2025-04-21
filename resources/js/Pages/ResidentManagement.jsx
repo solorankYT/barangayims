@@ -19,15 +19,21 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
-import { Add, Edit, Delete, Search } from "@mui/icons-material";
+import { Add, Edit, Delete, Search, Cancel, Check } from "@mui/icons-material";
 import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Tab } from "@headlessui/react";
 
 const ResidentManagement = () => {
   const { residents } = usePage().props; 
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [openVerify, setOpenVerify] = useState(false);
+  const [verifyResidentId, setVerifyResidentId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const [residentData, setResidentData] = useState({
     id: "",
     name: "",
@@ -43,6 +49,29 @@ const ResidentManagement = () => {
     password: "",
   });
   const [isEditing, setIsEditing] = useState(false);
+
+
+  const handleOpenVerify = (id) => {
+    setVerifyResidentId(id);
+    setOpenVerify(true);
+  };
+
+
+  const handleVerify = (isApproved) => {
+    setIsVerifying(true);
+    try {
+      router.post(`/residentmanagement/${verifyResidentId}/verify`, {
+        isApproved,
+        rejectionReason,
+      });
+      setOpenVerify(false);
+      setRejectionReason('');
+    } catch (error) {
+      console.error("Error verifying resident:", error);
+    }
+    setIsVerifying(false);
+  };
+
 
   const handleOpen = (resident = null) => {
     setIsEditing(!!resident);
@@ -127,11 +156,20 @@ const ResidentManagement = () => {
     }
   };
 
-  const filteredResidents = residents.filter((resident) => 
-    resident.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    resident.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    resident.contact_number.includes(searchTerm)
-  );
+  const filteredResidents = residents.filter((resident) => {
+    const searchTermLower = searchTerm.trim().toLowerCase();
+    const residentString = [
+      resident.name,
+      resident.email,
+      resident.household_number,
+      resident.contact_number
+    ]
+      .filter(Boolean) 
+      .map(val => val.toString().toLowerCase())
+      .join(' ');
+      
+    return residentString.includes(searchTermLower);
+  });
 
   return (
     <AuthenticatedLayout header="Resident Management">
@@ -167,16 +205,10 @@ const ResidentManagement = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell><b>ID</b></TableCell>
                 <TableCell><b>Name</b></TableCell>
-                <TableCell><b>Birthday</b></TableCell>
-                <TableCell><b>Gender</b></TableCell>
                 <TableCell><b>Email</b></TableCell>
                 <TableCell><b>Contact</b></TableCell>
                 <TableCell><b>Address</b></TableCell>
-                <TableCell><b>City</b></TableCell>
-                <TableCell><b>State</b></TableCell>
-                <TableCell><b>Zip Code</b></TableCell>
                 <TableCell><b>Household #</b></TableCell>
                 <TableCell><b>Actions</b></TableCell>
               </TableRow>
@@ -185,21 +217,19 @@ const ResidentManagement = () => {
               {filteredResidents.length > 0 ? (
                 filteredResidents.map((resident) => (
                   <TableRow key={resident.id}>
-                    <TableCell>{resident.id}</TableCell>
                     <TableCell>{resident.name}</TableCell>
-                    <TableCell>{resident.birthday}</TableCell>
-                    <TableCell>{resident.gender}</TableCell>
                     <TableCell>{resident.email}</TableCell>
                     <TableCell>{resident.contact_number}</TableCell>
                     <TableCell>{resident.address}</TableCell>
-                    <TableCell>{resident.city}</TableCell>
-                    <TableCell>{resident.state}</TableCell>
-                    <TableCell>{resident.zip_code}</TableCell>
                     <TableCell>{resident.household_number}</TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleOpen(resident)} color="primary">
                         <Edit />
                       </IconButton>
+                      <Button onClick={() => handleOpenVerify(resident.id)} color={resident.verified ? "secondary" : "primary"} disabled={resident.verified}>
+                      {resident.verified ? "Verified" : "Verify"}
+                      </Button>
+
                     </TableCell>
                   </TableRow>
                 ))
@@ -250,9 +280,46 @@ const ResidentManagement = () => {
             <Button onClick={handleSave} color="primary">{isEditing ? "Update" : "Save"}</Button>
           </DialogActions>
         </Dialog>
+
+
+        <Dialog open={openVerify} onClose={() => !isVerifying && setOpenVerify(false)} fullWidth>
+          <DialogTitle>Verify Account</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Rejection Reason (if rejecting)"
+              fullWidth
+              multiline
+              rows={3}
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              sx={{ mt: 2 }}
+              disabled={isVerifying}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => handleVerify(false)} 
+              color="error"
+              disabled={isVerifying}
+              startIcon={isVerifying ? <CircularProgress size={20} /> : <Cancel />}
+            >
+              Reject
+            </Button>
+            <Button 
+              onClick={() => handleVerify(true)} 
+              color="success"
+              disabled={isVerifying}
+              startIcon={isVerifying ? <CircularProgress size={20} /> : <Check />}
+            >
+              Approve
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </AuthenticatedLayout>
   );
+
+
 };
 
 export default ResidentManagement;

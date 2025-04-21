@@ -4,16 +4,12 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider, Button, FormControlLabel, Checkbox } from '@mui/material';
-import { Person, Email, Cake, Home, Transgender, Phone, Lock, CheckBox, CloudUpload } from '@mui/icons-material';
-import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { Box, Container, MenuItem, Select, FormControl, Typography, Paper, Divider } from '@mui/material';
+import { Person, Email, Cake, Home, Transgender, Phone, Lock } from '@mui/icons-material';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
-        first_name: '',
-        middle_name: '',
-        last_name: '',
+        name: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -23,33 +19,7 @@ export default function Register() {
         contact_number: '',
         city: '',
         zip_code: '',
-        household_head: false,
-        household: '',
-        valid_ID: null,
     });
-
-    useEffect(() => {
-        console.log("Form data changed:", data);
-    }, [data]);
-
-    const [households, setHouseholds] = useState([]);
-    const [isHouseholdHead, setIsHouseholdHead] = useState(false);
-
-    const fetchHouseholds = async () => {
-        try {
-            const response = await axios.get('/getHouseholds');
-            if (response.data && response.data.households) {
-                setHouseholds(response.data.households); // Set the households array
-            }
-        } catch (error) {
-            console.error("Error fetching households:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchHouseholds();
-    }, []);
-        
 
     const submit = (e) => {
         e.preventDefault();
@@ -85,50 +55,19 @@ export default function Register() {
                         </Typography>
                         
                         <form onSubmit={submit}>
-
                             <FormControl fullWidth sx={{ mb: 3 }}>
-                                <InputLabel htmlFor="first_name" value="First Name" />
+                                <InputLabel htmlFor="name" value="Full Name" />
                                 <TextInput
-                                    id="first_name"
-                                    name="first_name"
-                                    value={data.first_name}
-                                    autoComplete="first_name"
+                                    id="name"
+                                    name="name"
+                                    value={data.name}
+                                    autoComplete="name"
                                     isFocused={true}
-                                    onChange={(e) => setData('first_name', e.target.value)}
+                                    onChange={(e) => setData('name', e.target.value)}
                                     required
                                     startAdornment={<Person sx={{ color: 'action.active', mr: 1 }} />}
                                 />
-                                <InputError message={errors.first_name} />
-                            </FormControl>
-
-                            <FormControl fullWidth sx={{ mb: 3 }}>
-                                <InputLabel htmlFor="middle_name" value="Middle Name" />
-                                <TextInput
-                                    id="middle_name"
-                                    name="middle_name"
-                                    value={data.middle_name}
-                                    autoComplete="middle_name"
-                                    isFocused={true}
-                                    onChange={(e) => setData('middle_name', e.target.value)}
-                                    required
-                                    startAdornment={<Person sx={{ color: 'action.active', mr: 1 }} />}
-                                />
-                                <InputError message={errors.middle_name} />
-                            </FormControl>
-
-                            <FormControl fullWidth sx={{ mb: 3 }}>
-                                <InputLabel htmlFor="last_name" value="Last Name" />
-                                <TextInput
-                                    id="last_name"
-                                    name="last_name"
-                                    value={data.last_name}
-                                    autoComplete="last_name"
-                                    isFocused={true}
-                                    onChange={(e) => setData('last_name', e.target.value)}
-                                    required
-                                    startAdornment={<Person sx={{ color: 'action.active', mr: 1 }} />}
-                                />
-                                <InputError message={errors.last_name} />
+                                <InputError message={errors.name} />
                             </FormControl>
                             
                             <FormControl fullWidth sx={{ mb: 3 }}>
@@ -168,6 +107,7 @@ export default function Register() {
                                     value={data.gender}
                                     onChange={(e) => setData('gender', e.target.value)}
                                     required
+                                    startAdornment={<Transgender sx={{ color: 'action.active', mr: 1 }} />}
                                 >
                                     <MenuItem value="">Select Gender</MenuItem>
                                     <MenuItem value="male">Male</MenuItem>
@@ -230,41 +170,7 @@ export default function Register() {
                                 />
                                 <InputError message={errors.contact_number} />
                             </FormControl>
-
-
-                           <FormControlLabel 
-                                control={
-                                    <Checkbox 
-                                        checked={data.household_head}
-                                        onChange={(e) => {
-                                            setData('household_head', e.target.checked);
-                                            setIsHouseholdHead(e.target.checked); // Update isHouseholdHead state
-                                        }}
-                                    />
-                                }
-                                label="Household?"
-                            />
                             
-                            {!isHouseholdHead && ( // Conditionally render the dropdown
-                                <FormControl fullWidth sx={{ mb: 3 }}>
-                                    <InputLabel htmlFor="household" value="Household" />
-                                    <Select
-                                        id="household"
-                                        name="household"
-                                        value={data.household.name}
-                                        onChange={(e) => setData('household', e.target.value)}
-                                        required
-                                    >
-                                        {households.map((household) => (
-                                            <MenuItem key={household.id} value={household.id}>
-                                                {household.name}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                    <InputError message={errors.household} />
-                                </FormControl>
-                            )}
-
                             <Divider sx={{ my: 3 }} />
                             
                             <FormControl fullWidth sx={{ mb: 3 }}>
@@ -295,25 +201,7 @@ export default function Register() {
                                 />
                                 <InputError message={errors.password_confirmation} />
                             </FormControl>
-
-
-                            <Button component="label" variant="outlined" startIcon={<CloudUpload />}>
-                            Upload ID
-                            <input 
-                                type="file" 
-                                hidden 
-                                onChange={(e) => setData('valid_ID', e.target.files[0])}
-                                accept="image/*"
-                            />
-                            </Button>
-
-                            <Typography variant="body2" sx={{ mb: 1 }}>
-                            Upload a valid ID for verification.
-                            </Typography>
-                            <Typography variant="body2" sx={{ mb: 1 }}>
-                            (e.g., Government ID addressed to the barangay address,  driver's license, passport) 
-                            </Typography>
-  
+                            
                             <Box sx={{ 
                                 mt: 4,
                                 display: 'flex',
