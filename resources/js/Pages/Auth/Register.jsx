@@ -325,8 +325,8 @@ export default function Register() {
                                     required
                                     onChange={(e) => {
                                     if (e.target.files && e.target.files[0]) {
-                                        // Basic validation
-                                        if (e.target.files[0].size > 2 * 1024 * 1024) { // 2MB limit
+                                      
+                                        if (e.target.files[0].size > 2 * 1024 * 1024) {
                                         alert('File size must be less than 2MB');
                                         return;
                                         }

@@ -53,8 +53,10 @@ const ResidentManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   console.log(residents);
-  const handleOpenVerify = (id) => {
-    setVerifyResidentId(id);
+
+  const handleOpenVerify = (resident) => {
+    setVerifyResidentId(resident.id);
+    setResidentData(resident);
     setOpenVerify(true);
   };
 
@@ -234,7 +236,7 @@ const ResidentManagement = () => {
                       <IconButton onClick={() => handleOpen(resident)} color="primary">
                         <Edit />
                       </IconButton>
-                      <Button onClick={() => handleOpenVerify(resident.id)} color={resident.verified ? "secondary" : "primary"} disabled={resident.verified}>
+                      <Button onClick={() => handleOpenVerify(resident)}>
                       {resident.verified ? "Verified" : "Verify"}
                       </Button>
 
@@ -293,11 +295,19 @@ const ResidentManagement = () => {
         <Dialog open={openVerify} onClose={() => !isVerifying && setOpenVerify(false)} fullWidth>
           <DialogTitle>Verify Account</DialogTitle>
           <DialogContent>
-            <img
-              src={verifyResidentId.valid_id_url}
-              alt="Barangay Logo"
-              style={{ width: 80, height: 80, marginRight: 10 }}
-            />
+                {verifyResidentId && (
+                  <>
+                    <img
+                      src={residents.find(r => r.id === verifyResidentId)?.valid_id_url}
+                      alt="Resident Valid ID"
+                      style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto', display: 'block' }}
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                    {!residents.find(r => r.id === verifyResidentId)?.valid_id_url && (
+                      <Typography color="error">No valid ID uploaded</Typography>
+                    )}
+                  </>
+                )}
             <TextField
               label="Rejection Reason (if rejecting)"
               fullWidth
