@@ -45,12 +45,14 @@ const ResidentManagement = () => {
     city: "",
     state: "",
     zip_code: "",
-    household_number: "",
+    household_head: "",
+    household_id: "",
     password: "",
+    valid_id_url: "",
   });
   const [isEditing, setIsEditing] = useState(false);
 
-
+  console.log(residents);
   const handleOpenVerify = (id) => {
     setVerifyResidentId(id);
     setOpenVerify(true);
@@ -88,7 +90,9 @@ const ResidentManagement = () => {
           city: resident.city,
           state: resident.state,
           zip_code: resident.zip_code,
-          household_number: resident.household_number,
+          household_head: resident.household_head,
+          household_id: resident.household_id,
+          valid_id_url: resident.valid_id_url,
           password: "", 
         }
         : {
@@ -102,7 +106,9 @@ const ResidentManagement = () => {
           city: "",
           state: "",
           zip_code: "",
-          household_number: "",
+          household_id: "",
+          household_head: "",
+          valid_id_url: "",
           password: "",
         }
     );
@@ -122,7 +128,9 @@ const ResidentManagement = () => {
       city: "",
       state: "",
       zip_code: "",
-      household_number: "",
+      household_id: "",
+      household_head: "",
+      valid_id_url: "",
       password: "",
     });
   };
@@ -161,7 +169,7 @@ const ResidentManagement = () => {
     const residentString = [
       resident.name,
       resident.email,
-      resident.household_number,
+      resident.household_id,
       resident.contact_number
     ]
       .filter(Boolean) 
@@ -221,7 +229,7 @@ const ResidentManagement = () => {
                     <TableCell>{resident.email}</TableCell>
                     <TableCell>{resident.contact_number}</TableCell>
                     <TableCell>{resident.address}</TableCell>
-                    <TableCell>{resident.household_number}</TableCell>
+                    <TableCell>{resident.household_id}</TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleOpen(resident)} color="primary">
                         <Edit />
@@ -268,7 +276,7 @@ const ResidentManagement = () => {
             <TextField label="City" name="city" fullWidth margin="dense" value={residentData.city} onChange={(e) => setResidentData({ ...residentData, city: e.target.value })} />
             <TextField label="State" name="state" fullWidth margin="dense" value={residentData.state} onChange={(e) => setResidentData({ ...residentData, state: e.target.value })} />
             <TextField label="Zip Code" name="zip_code" fullWidth margin="dense" value={residentData.zip_code} onChange={(e) => setResidentData({ ...residentData, zip_code: e.target.value })} />
-            <TextField label="Household Number" name="household_number" fullWidth margin="dense" value={residentData.household_number} onChange={(e) => setResidentData({ ...residentData, household_number: e.target.value })} />
+            <TextField label="Household Number" name="household_id" fullWidth margin="dense" value={residentData.household_id} onChange={(e) => setResidentData({ ...residentData, household_id: e.target.value })} />
            <Typography variant="h6">Account Information</Typography>
             <TextField label="Email" name="email" type="email" fullWidth margin="dense" value={residentData.email} onChange={(e) => setResidentData({ ...residentData, email: e.target.value })} />
             {!isEditing && (
@@ -285,6 +293,11 @@ const ResidentManagement = () => {
         <Dialog open={openVerify} onClose={() => !isVerifying && setOpenVerify(false)} fullWidth>
           <DialogTitle>Verify Account</DialogTitle>
           <DialogContent>
+            <img
+              src={verifyResidentId.valid_id_url}
+              alt="Barangay Logo"
+              style={{ width: 80, height: 80, marginRight: 10 }}
+            />
             <TextField
               label="Rejection Reason (if rejecting)"
               fullWidth
