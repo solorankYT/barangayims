@@ -298,7 +298,7 @@ const ResidentManagement = () => {
                 {verifyResidentId && (
                   <>
                     <img
-                      src={residents.find(r => r.id === verifyResidentId)?.valid_id_url}
+                      src={residents.find(r => r.id === verifyResidentId)?.valid_id_url || ''}
                       alt="Resident Valid ID"
                       style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto', display: 'block' }}
                       onError={(e) => e.target.style.display = 'none'}
