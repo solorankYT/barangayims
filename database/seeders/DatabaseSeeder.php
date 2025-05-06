@@ -76,14 +76,14 @@ class DatabaseSeeder extends Seeder
                 'email' => 'wesleycapili6@gmail.com',
                 'password' => Hash::make('password'),
                 'role' => 'Resident',
-                'contact_number' => '09666791182',
+                'contact_number' => '09660791182',
             ],
             [
                 'name' => 'Hans Louis N. Chua',
                 'email' => 'hanschua00@gmail.com',
                 'password' => Hash::make('123'),
                 'role' => 'Resident',
-                'contact_number' => '9762970120',
+                'contact_number' => '9055260182',
             ],
         ];
 
