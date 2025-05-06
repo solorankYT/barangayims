@@ -64,6 +64,27 @@ class DatabaseSeeder extends Seeder
                 'role' => 'Barangay Captain',
                 'contact_number' => '09606200611',
             ],
+            [
+                'name' => 'Judea Anncris F. Figueroa',
+                'email' => 'judeaanncris@gmail.com',
+                'password' => Hash::make('password'),
+                'role' => 'Resident',
+                'contact_number' => '9055260182',
+            ],
+            [
+                'name' => 'Wesley Benedict M .Capili',
+                'email' => 'wesleycapili6@gmail.com',
+                'password' => Hash::make('password'),
+                'role' => 'Resident',
+                'contact_number' => '09666791182',
+            ],
+            [
+                'name' => 'Hans Louis N. Chua',
+                'email' => 'hanschua00@gmail.com',
+                'password' => Hash::make('123'),
+                'role' => 'Resident',
+                'contact_number' => '9762970120',
+            ],
         ];
 
         foreach ($users as $userData) {
