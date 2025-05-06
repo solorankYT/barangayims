@@ -26,6 +26,7 @@ class DocumentRequestController extends Controller
     }
     public function store(Request $request)
     {
+        Log::info('Requests', $request->all());
         try {
             $validated = $request->validate([
                 'userID' => 'required|exists:users,id',
@@ -40,6 +41,7 @@ class DocumentRequestController extends Controller
                 'documentTypeID' => $request->documentTypeID,
                 'status' => "Pending",
                 'purpose' => $request->purpose,
+                'pickupOption' => $request->pickupOption,
                 'remarks' => $request->remarks,
             ]);
     

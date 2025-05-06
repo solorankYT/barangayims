@@ -5,7 +5,10 @@ import {
   TableHead, TableRow, Paper, MenuItem, InputAdornment, Chip, Grid, 
   Typography, Divider, Select, FormControl, InputLabel, Stepper, Step,
   StepLabel, Alert, Avatar, Checkbox, FormControlLabel, LinearProgress,
-  TableFooter, TablePagination, Snackbar
+  TableFooter, TablePagination, Snackbar,
+  FormGroup,
+  RadioGroup,
+  Radio
 } from "@mui/material";
 import { 
   Add, Edit, Search, Check, Close, Download, 
@@ -33,6 +36,7 @@ const AdminDocuments = () => {
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(0);
+  const [readOnly, setReadOnly] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -50,13 +54,11 @@ const AdminDocuments = () => {
       user_id: users.length ? users[0].id : null,
       document_type_id: documentTypes.length ? documentTypes[0].documentTypeID : null,
       status: 'Pending',
+      pickupOption: '',
       purpose: '',
       remarks: '',
       staff_notes: '',
-      full_name: '',
-      date_of_birth: '',
-      contact_number: '',
-      address: '',
+      full_name: '',  
       business_name: '',
       business_address: '',
       monthly_income: '',
@@ -66,6 +68,12 @@ const AdminDocuments = () => {
     setActiveStep(0);
   };
 
+  const handleEdit = (request) => {
+    setCurrentRequest(request);
+    setReadOnly(true); // Set the dialog to read-only mode
+    setOpen(true);
+    setActiveStep(0);
+  };
   const handleStatusChange = async (id, status, notes = '') => {
     setLoading(true);
     try {
@@ -118,6 +126,8 @@ const AdminDocuments = () => {
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }, [documentRequests, searchTerm, filter, advancedFilters, documentTypes]);
 
+
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -127,16 +137,20 @@ const AdminDocuments = () => {
         purpose: currentRequest.purpose,
         remarks: currentRequest.remarks,
         status: currentRequest.status || 'Pending',
+        pickupOption: currentRequest.pickupOption,
       };
   
+      // If the request has an ID, it should be an update
       if (currentRequest.id) {
         await router.put(`/AdminDocuments/${currentRequest.id}`, formData);
+        showSnackbar('Request updated successfully', 'success');
       } else {
+        // Otherwise, create a new request
         await router.post('/AdminDocuments', formData);
+        showSnackbar('Request saved successfully', 'success');
       }
       
-      showSnackbar('Request saved successfully', 'success');
-      setOpen(false);
+      setOpen(false); // Close the modal after submission
     } catch (error) {
       console.error('Error saving request:', error);
       showSnackbar('Failed to save request', 'error');
@@ -144,6 +158,7 @@ const AdminDocuments = () => {
       setLoading(false);
     }
   };
+  
 
   const statusColors = {
     Pending: 'warning',
@@ -306,7 +321,11 @@ const AdminDocuments = () => {
               {filteredRequests.length > 0 ? (
                 filteredRequests.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((request) => (
                   <TableRow key={request.id} hover>
+
+                    {/* Request ID */}
                     <TableCell>#{request.id}</TableCell>
+
+                    {/* Resident Name */}
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Avatar sx={{ width: 32, height: 32 }}>
@@ -315,12 +334,16 @@ const AdminDocuments = () => {
                         {request.user?.name || 'N/A'}
                       </Box>
                     </TableCell>
+
+                    {/* Document Type */}
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getDocumentIcon(request.documentTypeID)}
                         {getDocumentName(request.documentTypeID)}
                       </Box>
                     </TableCell>
+
+                    {/* Status */}
                     <TableCell>
                       <Chip 
                         label={request.status} 
@@ -328,12 +351,25 @@ const AdminDocuments = () => {
                         variant={request.status === 'Pending' ? 'outlined' : 'filled'}
                       />
                     </TableCell>
+
+                    {/* Pickup Option */}
+                    <TableCell>
+                      <Chip
+                      label={request.pickupOption}
+                      
+                      />
+                      
+                    </TableCell>
+
+                    {/* Date */}
                     <TableCell>
                       {new Date(request.created_at).toLocaleString()}
                     </TableCell>
+
+                    {/* Actions */}
                     <TableCell>
                       <IconButton 
-                        onClick={() => handleOpen(request)}
+                        onClick={() => handleEdit(request)}
                         color="primary"
                         title="View Details"
                         aria-label="View details"
@@ -402,6 +438,7 @@ const AdminDocuments = () => {
         </TableContainer>
 
         {/* Request Detail Dialog */}
+        
         <Dialog 
           open={open} 
           onClose={() => setOpen(false)} 
@@ -440,7 +477,7 @@ const AdminDocuments = () => {
                   <FormControl fullWidth margin="normal" error={!!errors?.documentTypeID}>
                     <InputLabel>Document Type *</InputLabel>
                     <Select
-                      value={currentRequest?.document_type_id || ''}
+                      value={currentRequest?.document_type_id  || ''}
                       onChange={(e) => setCurrentRequest({...currentRequest, document_type_id: e.target.value})}
                       label="Document Type *"
                     >
@@ -459,7 +496,7 @@ const AdminDocuments = () => {
                 </Grid>
                 
                 <Grid item xs={12} md={6}>
-                  <FormControl fullWidth margin="normal" error={!!errors?.userID}>
+                  <FormControl fullWidth margin="normal" error={!!errors?.user_id}>
                     <InputLabel>Resident *</InputLabel>
                     <Select
                       value={currentRequest?.user_id || ''}
@@ -503,6 +540,24 @@ const AdminDocuments = () => {
                     rows={2}
                   />
                 </Grid>
+                
+                <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Pickup Option
+                </Typography>
+                <FormControl component="fieldset" fullWidth margin="normal">
+                  <RadioGroup
+                    row
+                    name="pickupOption"
+                    value={currentRequest?.pickupOption || ''}
+                    onChange={(e) => setCurrentRequest({ ...currentRequest, pickupOption: e.target.value })}
+                  >
+                    <FormControlLabel value="pickup" control={<Radio />} label="Pickup" />
+                    <FormControlLabel value="email" control={<Radio />} label="Email" />
+                  </RadioGroup>
+                </FormControl>
+                    
+                    </Grid>
               </Grid>
             )}
 
@@ -518,7 +573,7 @@ const AdminDocuments = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     label="Full Name"
-                    value={currentRequest?.user?.name || currentRequest?.full_name || ''}
+                    value={currentRequest?.user?.name || currentRequest?.full_name}
                     fullWidth
                     margin="normal"
                   />
@@ -527,7 +582,7 @@ const AdminDocuments = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     label="Contact Number"
-                    value={currentRequest?.contact_number || ''}
+                    value={currentRequest?.user?.contact_number}
                     fullWidth
                     margin="normal"
                   />
@@ -536,7 +591,7 @@ const AdminDocuments = () => {
                 <Grid item xs={12}>
                   <TextField
                     label="Address"
-                    value={currentRequest?.address || ''}
+                    value={currentRequest?.user?.address}
                     fullWidth
                     margin="normal"
                   />
@@ -592,10 +647,11 @@ const AdminDocuments = () => {
             )}
           </DialogContent>
           
+       
           <DialogActions sx={{ borderTop: 1, borderColor: 'divider', p: 2 }}>
             <Box sx={{ flex: 1 }}>
               {activeStep > 0 && (
-                <Button onClick={() => setActiveStep(activeStep - 1)}>
+                <Button onClick={() => setActiveStep(activeStep - 1)} disabled={readOnly}>
                   Back
                 </Button>
               )}
@@ -603,17 +659,19 @@ const AdminDocuments = () => {
             
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button onClick={() => setOpen(false)} variant="outlined">
-                Cancel
+                Close
               </Button>
               
-              {activeStep < 2 ? (
+              {activeStep < 2 && (
                 <Button 
                   onClick={() => setActiveStep(activeStep + 1)} 
                   variant="contained"
                 >
                   Next
                 </Button>
-              ) : (
+              )}
+              
+              {!readOnly && activeStep === 2 && (
                 <Button 
                   onClick={handleSubmit}
                   variant="contained"
