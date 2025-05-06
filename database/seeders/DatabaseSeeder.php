@@ -83,7 +83,7 @@ class DatabaseSeeder extends Seeder
                 'email' => 'hanschua00@gmail.com',
                 'password' => Hash::make('123'),
                 'role' => 'Resident',
-                'contact_number' => '9055260182',
+                'contact_number' => '9005260182',
             ],
         ];
 
