@@ -12,6 +12,7 @@ class DocumentRequests extends Model
         'userID',
         'documentTypeID',
         'status',
+        'pickupOption',
         'purpose',
         'remarks',
     ];

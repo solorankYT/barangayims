@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('userID');
             $table->foreignId('documentTypeID');
             $table->string('status');
+            $table->string('pickupOption')->nullable();
             $table->string('purpose');
             $table->string('remarks');
             $table->timestamps();

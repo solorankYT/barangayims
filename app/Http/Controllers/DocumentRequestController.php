@@ -30,6 +30,7 @@ class DocumentRequestController extends Controller
             $validated = $request->validate([
                 'userID' => 'required|exists:users,id',
                 'documentTypeID' => 'required|exists:document_types,documentTypeID',
+                'pickupOption' => 'nullable|string|max:50',
                 'purpose' => 'required|string|max:255',
                 'remarks' => 'nullable|string|max:255',
             ]);
