@@ -179,12 +179,29 @@ const IncidentReport = () => {
               value={incidentData.incidentType}
               onChange={(e) => setIncidentData({ ...incidentData, incidentType: e.target.value })}
             >
-              <MenuItem value="Noise Complaint">Noise Complaint</MenuItem>
-              <MenuItem value="Illegal Parking">Illegal Parking</MenuItem>
-              <MenuItem value="Robbery / Hold-up">Robbery / Hold-up</MenuItem>
-              <MenuItem value="Physical Assault">Physical Assault</MenuItem>
-              <MenuItem value="Theft">Theft</MenuItem>
+              <MenuItem value="Noise Disturbance">Noise Disturbance</MenuItem>
+              <MenuItem value="Family or Domestic Issue">Family or Domestic Issue</MenuItem>
+              <MenuItem value="Property or Boundary Concern">Property or Boundary Concern</MenuItem>
+              <MenuItem value="Peace and Order Complaint">Peace and Order Complaint</MenuItem>
+              <MenuItem value="Sanitation or Environmental Issue">Sanitation or Environmental Issue</MenuItem>
+              <MenuItem value="Animal-Related Concern">Animal-Related Concern</MenuItem>
+              <MenuItem value="Business or Permit Violation">Business or Permit Violation</MenuItem>
+              <MenuItem value="Theft or Property Damage">Theft or Property Damage</MenuItem>
+              <MenuItem value="Violation of Barangay Ordinance">Violation of Barangay Ordinance</MenuItem>
+              <MenuItem value="Others (Please Specify)">Others (Please Specify)</MenuItem>
             </TextField>
+
+            {/* Show additional input if "Others" is selected */}
+            {incidentData.incidentType === "Others (Please Specify)" && (
+              <TextField
+                label="Please Specify"
+                fullWidth
+                margin="dense"
+                name="customIncidentType"
+                value={incidentData.customIncidentType || ""}
+                onChange={(e) => setIncidentData({ ...incidentData, customIncidentType: e.target.value })}
+              />
+            )}
 
             <TextField
               label="Description"

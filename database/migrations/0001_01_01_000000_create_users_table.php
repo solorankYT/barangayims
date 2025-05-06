@@ -31,6 +31,7 @@ return new class extends Migration
             $table->boolean('household_head')->default(false)->nullable();
             $table->foreignId('household_id')->nullable();
             $table->boolean('is_verified')->default(false);
+            $table->string('verification_rejection_reason')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

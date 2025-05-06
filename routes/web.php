@@ -123,5 +123,6 @@ Route::post('/user/validate', [UserController::class, 'validateUser']);
 Route::post('/registerUser', [ResidentController::class, 'registerUser']);
 
 Route::get('/valid_ids/{filename}',[ResidentFileController::class, 'serveValidID']);
+Route::post('/residentmanagement/{id}/verify', [ResidentController::class, 'handleVerification'])->name('resident.verify');
 
 require __DIR__.'/auth.php';

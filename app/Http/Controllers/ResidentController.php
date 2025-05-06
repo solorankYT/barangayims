@@ -121,4 +121,26 @@ class ResidentController extends Controller
 
         return response()->json(['message' => 'Resident deleted successfully.']);
     }
+
+    public function handleVerification(Request $request, $id)
+    {
+        $request->validate([
+            'isApproved' => 'required|boolean',
+            'rejectionReason' => 'nullable|string',
+        ]);
+
+        $resident = User::findOrFail($id);
+
+        if ($request->isApproved) {
+            $resident->is_verified = true;
+            $resident->verification_rejection_reason = null;
+        } else {
+            $resident->is_verified = false;
+            $resident->verification_rejection_reason = $request->rejectionReason ?? 'No reason provided.';
+        }
+
+        $resident->save();
+
+        return redirect()->route('residentmanagement')->with('success', 'Resident verification updated.');
+    }
 }

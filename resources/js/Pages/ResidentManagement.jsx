@@ -57,6 +57,7 @@ const ResidentManagement = () => {
   const handleOpenVerify = (resident) => {
     setVerifyResidentId(resident.id);
     setResidentData(resident);
+    setRejectionReason(resident.verification_rejection_reason || ""); // Set default value
     setOpenVerify(true);
   };
 
@@ -236,8 +237,15 @@ const ResidentManagement = () => {
                       <IconButton onClick={() => handleOpen(resident)} color="primary">
                         <Edit />
                       </IconButton>
-                      <Button onClick={() => handleOpenVerify(resident)}>
-                      {resident.verified ? "Verified" : "Verify"}
+                      <Button 
+                        onClick={() => handleOpenVerify(resident)} 
+                        color={resident.is_verified ? "success" : resident.verification_rejection_reason ? "error" : "primary"}
+                      >
+                        {resident.is_verified 
+                          ? "Verified" 
+                          : resident.verification_rejection_reason 
+                          ? "Rejected" 
+                          : "Verify"}
                       </Button>
 
                     </TableCell>
