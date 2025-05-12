@@ -2,25 +2,23 @@ import React, { useState, useMemo } from "react";
 import {
   Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
   TextField, IconButton, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, MenuItem, InputAdornment, Chip, Grid, 
+  TableHead, TableRow, Paper, MenuItem, InputAdornment, Chip, Grid,
   Typography, Divider, Select, FormControl, InputLabel, Stepper, Step,
-  StepLabel, Alert, Avatar, Checkbox, FormControlLabel, LinearProgress,
-  TableFooter, TablePagination, Snackbar,
-  FormGroup,
-  RadioGroup,
-  Radio
+  StepLabel, Alert, Avatar, LinearProgress, TableFooter, TablePagination,
+  Snackbar, RadioGroup, FormControlLabel, Radio
 } from "@mui/material";
-import { 
-  Add, Edit, Search, Check, Close, Download, 
-  Visibility, Person, Business, Work, Receipt 
+import {
+  Add, Edit, Search, Check, Close, Download,
+  Visibility, Business, Work, Receipt
 } from "@mui/icons-material";
 import { usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const AdminDocuments = () => {
   const { documentRequests = [], users = [], documentTypes: backendDocumentTypes = [], errors } = usePage().props;
-  const documentTypes = backendDocumentTypes.length > 0 
-    ? backendDocumentTypes 
+
+  const documentTypes = backendDocumentTypes.length > 0
+    ? backendDocumentTypes
     : [
         { documentTypeID: 1, name: 'Barangay Clearance' },
         { documentTypeID: 2, name: 'Certificate of Indigency' },
@@ -33,8 +31,9 @@ const AdminDocuments = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentRequest, setCurrentRequest] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
+  const [openRejectModal, setOpenRejectModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
   const [filter, setFilter] = useState("all");
-  const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(0);
   const [readOnly, setReadOnly] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -48,9 +47,34 @@ const AdminDocuments = () => {
     document_type_id: ''
   });
 
+  const handleStatusChange = async (documentRequestID, status, notes = '') => {
+    setLoading(true);
+    try {
+      await router.put(`/AdminDocuments/${documentRequestID}`, {
+        status,
+      });
+      showSnackbar('Status updated successfully', 'success');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      showSnackbar('Failed to update status', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  const handleRejectSubmit = async () => {
+    if (!rejectionReason) {
+      alert('Please enter a rejection reason.');
+      return;
+    }
+    await handleStatusChange(currentRequest.documentRequestID, 'Rejected', rejectionReason);
+    setOpenRejectModal(false);
+  };
+
   const handleOpen = (request = null) => {
     setCurrentRequest(request || {
-      id: null,
+      documentRequestID: '',
       user_id: users.length ? users[0].id : null,
       document_type_id: documentTypes.length ? documentTypes[0].documentTypeID : null,
       status: 'Pending',
@@ -58,7 +82,7 @@ const AdminDocuments = () => {
       purpose: '',
       remarks: '',
       staff_notes: '',
-      full_name: '',  
+      full_name: '',
       business_name: '',
       business_address: '',
       monthly_income: '',
@@ -70,29 +94,9 @@ const AdminDocuments = () => {
 
   const handleEdit = (request) => {
     setCurrentRequest(request);
-    setReadOnly(true); // Set the dialog to read-only mode
+    setReadOnly(true);
     setOpen(true);
     setActiveStep(0);
-  };
-  const handleStatusChange = async (id, status, notes = '') => {
-    setLoading(true);
-    try {
-      if (status === 'Rejected' && !notes) {
-        notes = prompt('Please enter rejection reason:');
-        if (notes === null) return;
-      }
-      
-      await router.put(`/AdminDocuments/${id}`, {
-        status,
-        staff_notes: notes
-      });
-      showSnackbar('Status updated successfully', 'success');
-    } catch (error) {
-      console.error('Error updating status:', error);
-      showSnackbar('Failed to update status', 'error');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const showSnackbar = (message, severity = 'success') => {
@@ -107,26 +111,24 @@ const AdminDocuments = () => {
     return documentRequests
       .filter(request => {
         const user = request.user || {};
-        const matchesSearch = 
+        const matchesSearch =
           user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (documentTypes.find(t => t.documentTypeID === request.documentTypeID)?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           request.status.toLowerCase().includes(searchTerm.toLowerCase()));
-        
-        const matchesFilter = filter === "all" || 
+
+        const matchesFilter = filter === "all" ||
           (filter === "pending" && request.status === "Pending") ||
           (filter === "approved" && request.status === "Approved") ||
           (filter === "rejected" && request.status === "Rejected");
-        
+
         const matchesAdvancedFilters = (
-          (!advancedFilters.document_type_id || request.documentTypeID == advancedFilters.document_type_id)
+          !advancedFilters.document_type_id || request.documentTypeID == advancedFilters.document_type_id
         );
-        
+
         return matchesSearch && matchesFilter && matchesAdvancedFilters;
       })
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }, [documentRequests, searchTerm, filter, advancedFilters, documentTypes]);
-
-
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -139,18 +141,16 @@ const AdminDocuments = () => {
         status: currentRequest.status || 'Pending',
         pickupOption: currentRequest.pickupOption,
       };
-  
-      // If the request has an ID, it should be an update
-      if (currentRequest.id) {
-        await router.put(`/AdminDocuments/${currentRequest.id}`, formData);
+
+      if (currentRequest.documentRequestID) {
+        await router.put(`/AdminDocuments/${currentRequest.documentRequestID}`, formData);
         showSnackbar('Request updated successfully', 'success');
       } else {
-        // Otherwise, create a new request
         await router.post('/AdminDocuments', formData);
         showSnackbar('Request saved successfully', 'success');
       }
-      
-      setOpen(false); // Close the modal after submission
+
+      setOpen(false);
     } catch (error) {
       console.error('Error saving request:', error);
       showSnackbar('Failed to save request', 'error');
@@ -158,7 +158,6 @@ const AdminDocuments = () => {
       setLoading(false);
     }
   };
-  
 
   const statusColors = {
     Pending: 'warning',
@@ -169,8 +168,8 @@ const AdminDocuments = () => {
   const getDocumentIcon = (documentTypeId) => {
     const type = documentTypes.find(t => t.documentTypeID == documentTypeId);
     if (!type) return <Receipt />;
-    
-    switch(type.name) {
+
+    switch (type.name) {
       case 'Barangay Business Permit': return <Business color="primary" />;
       case 'First Time Job Seeker Certificate': return <Work color="action" />;
       case 'Certificate of Indigency': return <Receipt color="secondary" />;
@@ -320,10 +319,10 @@ const AdminDocuments = () => {
             <TableBody>
               {filteredRequests.length > 0 ? (
                 filteredRequests.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((request) => (
-                  <TableRow key={request.id} hover>
+                  <TableRow key={request.documentRequestID} hover>
 
                     {/* Request ID */}
-                    <TableCell>#{request.id}</TableCell>
+                    <TableCell>#{request.documentRequestID}</TableCell>
 
                     {/* Resident Name */}
                     <TableCell>
@@ -379,7 +378,7 @@ const AdminDocuments = () => {
                       {request.status === 'Pending' && (
                         <>
                           <IconButton 
-                            onClick={() => handleStatusChange(request.id, 'Approved')}
+                            onClick={() => handleStatusChange(request.documentRequestID, 'Approved')}
                             color="success"
                             title="Approve"
                             aria-label="Approve"
@@ -387,7 +386,7 @@ const AdminDocuments = () => {
                             <Check />
                           </IconButton>
                           <IconButton 
-                            onClick={() => handleStatusChange(request.id, 'Rejected')}
+                            onClick={() => handleStatusChange(request.documentRequestID, 'Rejected')}
                             color="error"
                             title="Reject"
                             aria-label="Reject"
@@ -401,7 +400,7 @@ const AdminDocuments = () => {
                           color="primary"
                           title="Download Document"
                           aria-label="Download document"
-                          onClick={() => window.open(`/documents/${request.id}/download`, '_blank')}
+                          onClick={() => window.open(`/documents/${request.documentRequestID}/download`, '_blank')}
                         >
                           <Download />
                         </IconButton>
@@ -438,7 +437,6 @@ const AdminDocuments = () => {
         </TableContainer>
 
         {/* Request Detail Dialog */}
-        
         <Dialog 
           open={open} 
           onClose={() => setOpen(false)} 
@@ -451,7 +449,7 @@ const AdminDocuments = () => {
               {getDocumentIcon(currentRequest?.document_type_id)}
               <Typography variant="h6">
                 {currentRequest?.id 
-                  ? `Document Request #${currentRequest.id}`
+                  ? `Document Request #${currentRequest.documentRequestID}`
                   : 'New Document Request'}
               </Typography>
             </Box>
@@ -691,8 +689,27 @@ const AdminDocuments = () => {
           onClose={handleCloseSnackbar}
           message={snackbar.message}
         />
+
+        <Dialog open={openRejectModal} onClose={() => setOpenRejectModal(false)}>
+          <DialogTitle>Rejection Reason</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Enter Rejection Reason"
+              multiline
+              rows={4}
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              fullWidth
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenRejectModal(false)} color="primary">Cancel</Button>
+            <Button onClick={handleRejectSubmit} color="secondary">Submit</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </AuthenticatedLayout>
+
   );
 };
 

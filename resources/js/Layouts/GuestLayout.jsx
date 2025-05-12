@@ -65,6 +65,7 @@ const Footer = styled('footer')(({ theme }) => ({
 }));
 
 export default function GuestLayout({ children }) {
+  const { url } = usePage();
   const { auth } = usePage().props;
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsEl, setNotificationsEl] = useState(null);
@@ -250,6 +251,20 @@ export default function GuestLayout({ children }) {
                       </Typography>
                     </MenuItem>
                     <Divider />
+
+                  {auth.user.roles?.includes('Barangay Captain') && (
+                    <MenuItem 
+                      component={Link} 
+                      href={route('dashboard')} 
+                      onClick={handleMenuClose}
+                    >
+                      <ListItemIcon>
+                        <DashboardIcon fontSize="small" />
+                      </ListItemIcon>
+                      Dashboard
+                    </MenuItem>
+                    )}
+
                     <MenuItem 
                       component={Link} 
                       href={route('requeststatus')} 
@@ -271,33 +286,41 @@ export default function GuestLayout({ children }) {
                 </>
               ) : (
                 <>
-                  <Button
-                    variant="outlined"
-                    color="inherit"
+                 <Button
+                    variant={url === '/login' ? 'contained' : 'outlined'}
+                    color="primary"
                     component={Link}
                     href={route('login')}
                     size="small"
-                    sx={{ 
+                    sx={{
                       px: 2,
-                      display: { xs: 'none', sm: 'flex' }
+                      display: { xs: 'none', sm: 'flex' },
+                      bgcolor: url === '/login' ? 'primary.main' : 'inherit',
+                      color: url === '/login' ? '#fff' : 'inherit',
+                      borderColor: url === '/login' ? 'primary.main' : 'inherit',
                     }}
                   >
                     Login
                   </Button>
+
                   <Button
-                    variant="contained"
+                    variant={url === '/register' ? 'contained' : 'outlined'}
                     color="primary"
                     component={Link}
                     href={route('register')}
                     size="small"
-                    sx={{ 
+                    sx={{
                       px: 2,
                       ml: 1,
-                      display: { xs: 'none', sm: 'flex' }
+                      display: { xs: 'none', sm: 'flex' },
+                      bgcolor: url === '/register' ? 'primary.main' : 'inherit',
+                      color: url === '/register' ? '#fff' : 'inherit',
+                      borderColor: url === '/register' ? 'primary.main' : 'inherit',
                     }}
                   >
                     Register
                   </Button>
+
                 </>
               )}
             </Box>
@@ -433,65 +456,8 @@ export default function GuestLayout({ children }) {
       {/* Footer */}
       <Footer>
         <Container maxWidth="xl">
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/en/e/e8/Barangay_League_Logo.png"
-                  alt="Barangay Logo"
-                  style={{ width: 40, height: 40, marginRight: 10 }}
-                />
-                <Typography variant="h6">Barangay XYZ</Typography>
-              </Box>
-              <Typography variant="body2">
-                Serving our community with integrity and dedication.
-              </Typography>
-            </Grid>
-            
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" gutterBottom>
-                Quick Links
-              </Typography>
-              <List dense disablePadding>
-                {navItems.map((item) => (
-                  <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
-                    <Button 
-                      component={Link} 
-                      href={item.href} 
-                      color="inherit"
-                      size="small"
-                      sx={{ 
-                        justifyContent: 'flex-start',
-                        px: 0,
-                        textTransform: 'none'
-                      }}
-                    >
-                      {item.label}
-                    </Button>
-                  </ListItem>
-                ))}
-              </List>
-            </Grid>
-            
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" gutterBottom>
-                Contact Us
-              </Typography>
-              <Typography variant="body2" paragraph>
-                <Box component="span" sx={{ fontWeight: 600 }}>Address:</Box> Barangay XYZ, Caloocan City
-              </Typography>
-              <Typography variant="body2" paragraph>
-                <Box component="span" sx={{ fontWeight: 600 }}>Phone:</Box> (02) 8123-4567
-              </Typography>
-              <Typography variant="body2">
-                <Box component="span" sx={{ fontWeight: 600 }}>Email:</Box> barangay137@caloocan.gov.ph
-              </Typography>
-            </Grid>
-          </Grid>
-          
-          <Divider sx={{ my: 2, bgcolor: 'rgba(255,255,255,0.2)' }} />
-          
-          <Typography variant="body2" align="center">
+    
+            <Typography variant="body2" align="center">
             © {new Date().getFullYear()} Barangay XYZ. All rights reserved.
           </Typography>
         </Container>

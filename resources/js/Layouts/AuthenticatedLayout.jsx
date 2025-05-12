@@ -79,7 +79,6 @@ export default function AuthenticatedLayout({ header, children }) {
         <Box sx={{ display: "flex", bgcolor: "#f4f6f8", minHeight: "100vh" }}>
             <CssBaseline />
             
-            {/* Top App Bar */}
             <AppBar
                 position="fixed"
                 elevation={1}
@@ -100,20 +99,20 @@ export default function AuthenticatedLayout({ header, children }) {
                         {header}
                     </Typography>
 
-                    {/* Account Menu */}
-                    <Tooltip title="Account Settings">
-                        <Button
-                            onClick={handleMenuOpen}
-                            startIcon={<AccountCircle />}
-                            sx={{ color: "#000", textTransform: "none" }}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            color: '#000',
+                            '&:hover': {
+                            opacity: 0.8,
+                            }
+                        }}
                         >
-                            {user.name}
-                        </Button>
-                    </Tooltip>
-                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-                        <MenuItem component={Link} href={route("profile.edit")}>Profile</MenuItem>
-                        <MenuItem onClick={handleLogout}>Log Out</MenuItem>
-                    </Menu>
+                        <AccountCircle sx={{ mr: 1 }} />
+                        <Typography>{user.name}</Typography>
+                        </Box>
                 </Toolbar>
             </AppBar>
 

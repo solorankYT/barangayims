@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentRequests extends Model
 {
+    
     protected $table = 'document_requests';
     protected $primaryKey = 'documentRequestID';
     protected $fillable = [
